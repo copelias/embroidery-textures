@@ -1,14 +1,82 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Embroidery Canvas Test</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create your own patches – MAACAT Cuisine</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 
-<canvas id="canvas"></canvas>
+  <!-- Decorative yarn elements -->
+  <div class="yarn yarn-top"></div>
+  <div class="yarn yarn-left"></div>
+  <div class="yarn yarn-right"></div>
+  <div class="yarn yarn-bottom"></div>
 
-<script src="script.js"></script>
+  <main class="app-container">
+
+    <header class="header">
+      <h1>Create your own patches</h1>
+      <h2>MAACAT Cuisine</h2>
+      <p class="subtitle">
+        Transform your images into embroidery patch effect
+      </p>
+    </header>
+
+    <p class="description">
+      Turn your photos into soft, handmade embroidery-style patches.<br>
+      Inspired by dolls, yarn, and cozy stitching aesthetics.
+    </p>
+
+    <!-- Upload image -->
+    <label class="btn choose-btn">
+      Choose image
+      <input
+        type="file"
+        id="upload-btn"
+        accept="image/jpeg, image/png, image/jpg"
+        hidden
+      />
+    </label>
+
+    <!-- Preview -->
+    <section class="preview-section">
+      <div class="preview-box">
+        <canvas id="canvas"></canvas>
+        <span class="preview-note">Preview</span>
+      </div>
+    </section>
+
+    <!-- Embroidery style selector -->
+    <section class="controls">
+      <div class="stitch-selector">
+        <label for="stitch-style">Embroidery style</label>
+        <select id="stitch-style">
+          <option value="satin">Satin stitch (embroidered)</option>
+          <option value="outline">Outline stitch</option>
+          <option value="cross">Cross stitch (X stitch)</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Actions -->
+    <section class="actions">
+      <button id="transform-btn" disabled>Transform</button>
+      <button id="download-btn" disabled>Download</button>
+    </section>
+
+    <footer class="footer-note">
+      <p>
+        Images are processed locally in your browser.<br>
+        Nothing is uploaded or stored.
+      </p>
+    </footer>
+
+  </main>
+
+  <!-- JS will be added separately -->
+  <script src="script.js"></script>
 </body>
 </html>
