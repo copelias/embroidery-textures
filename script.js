@@ -9,7 +9,7 @@ const stitchStyle = document.getElementById("stitch-style");
 
 // TEXTURE SATIN
 const satinTexture = new Image();
-satinTexture.src = "satin.png"; // nella stessa cartella di index.html
+satinTexture.src = "https://copelias.github.io/embroidery-textures/satin.png"; // nella stessa cartella di index.html
 
 let sourceImage = null;
 let ready = false;
