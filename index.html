@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Create your own patches – MAACAT Cuisine</title>
+  <title>Create your own image effects – MAACAT Cuisine</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 
@@ -18,16 +18,16 @@
   <main class="app-container">
 
     <header class="header">
-      <h1>Create your own patches</h1>
+      <h1>Create your own image effects</h1>
       <h2>MAACAT Cuisine</h2>
       <p class="subtitle">
-        Transform your images into embroidery patch effect
+        Apply fun, stylish effects directly in your browser
       </p>
     </header>
 
     <p class="description">
-      Turn your photos into soft, handmade embroidery-style patches.<br>
-      Inspired by dolls, yarn, and cozy stitching aesthetics.
+      Turn your photos into creative styles.<br>
+      All effects are applied via code – no external textures required.
     </p>
 
     <!-- Upload image -->
@@ -49,14 +49,21 @@
       </div>
     </section>
 
-    <!-- Embroidery style selector -->
+    <!-- Effect selector -->
     <section class="controls">
-      <div class="stitch-selector">
-        <label for="stitch-style">Embroidery style</label>
-        <select id="stitch-style">
-          <option value="satin">Satin stitch (embroidered)</option>
-          <option value="outline">Outline stitch</option>
-          <option value="cross">Cross stitch (X stitch)</option>
+      <div class="effect-selector">
+        <label for="effect-style">Select effect</label>
+        <select id="effect-style">
+          <option value="grayscale">Grayscale</option>
+          <option value="sepia">Sepia</option>
+          <option value="invert">Invert Colors</option>
+          <option value="highContrast">High Contrast</option>
+          <option value="lowContrast">Low Contrast</option>
+          <option value="posterize">Color Threshold / Posterization</option>
+          <option value="duotone">Duotone</option>
+          <option value="tritone">Tritone</option>
+          <option value="falseColor">False Color</option>
+          <option value="monochrome">Monochrome Tint</option>
         </select>
       </div>
     </section>
