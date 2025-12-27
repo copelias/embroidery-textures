@@ -1,57 +1,124 @@
-const inputImage = document.getElementById("upload");
+// ELEMENTI
+const uploadInput = document.getElementById("upload-btn");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-const satinTexture = new Image();
-satinTexture.src = "satin.png"; // deve stare nella stessa cartella
+const transformBtn = document.getElementById("transform-btn");
+const downloadBtn = document.getElementById("download-btn");
+const stitchStyle = document.getElementById("stitch-style");
 
-inputImage.addEventListener("change", (e) => {
+// TEXTURE SATIN
+const satinTexture = new Image();
+satinTexture.src = "satin.png"; // nella stessa cartella di index.html
+
+let sourceImage = null;
+let ready = false;
+
+/* -------------------------
+   UPLOAD + PREVIEW
+------------------------- */
+uploadInput.addEventListener("change", (e) => {
   const file = e.target.files[0];
   if (!file) return;
 
   const reader = new FileReader();
   reader.onload = () => {
-    const img = new Image();
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
+    sourceImage = new Image();
+    sourceImage.onload = () => {
+      canvas.width = sourceImage.width;
+      canvas.height = sourceImage.height;
 
-      // disegna immagine originale
-      ctx.drawImage(img, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(sourceImage, 0, 0);
 
-      // applica effetto ricamo
-      applyEmbroideryEffect();
+      ready = true;
+      transformBtn.disabled = false;
+      downloadBtn.disabled = true;
     };
-    img.src = reader.result;
+    sourceImage.src = reader.result;
   };
   reader.readAsDataURL(file);
 });
 
-function applyEmbroideryEffect() {
-  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const data = imgData.data;
+/* -------------------------
+   TRANSFORM
+------------------------- */
+transformBtn.addEventListener("click", () => {
+  if (!ready) return;
 
-  for (let y = 0; y < canvas.height; y += 2) {
-    for (let x = 0; x < canvas.width; x += 2) {
-      const i = (y * canvas.width + x) * 4;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(sourceImage, 0, 0);
 
-      const r = data[i];
-      const g = data[i + 1];
-      const b = data[i + 2];
+  const style = stitchStyle.value;
 
-      const brightness = (r + g + b) / 3;
+  if (style === "satin") applySatinEmbroidery();
+  if (style === "outline") outlineStitch();
+  if (style === "cross") crossStitch();
 
-      // direzione filo
-      const angle = brightness > 128 ? 0 : Math.PI / 4;
+  downloadBtn.disabled = false;
+});
+
+/* -------------------------
+   SATIN EMBROIDERY (REAL THREAD FEEL)
+------------------------- */
+function applySatinEmbroidery() {
+  if (!satinTexture.complete) {
+    satinTexture.onload = applySatinEmbroidery;
+    return;
+  }
+
+  const step = 4;
+
+  for (let y = 0; y < canvas.height; y += step) {
+    for (let x = 0; x < canvas.width; x += step) {
+      const pixel = ctx.getImageData(x, y, 1, 1).data;
+      const brightness = (pixel[0] + pixel[1] + pixel[2]) / 3;
 
       ctx.save();
       ctx.translate(x, y);
-      ctx.rotate(angle);
-
-      ctx.globalAlpha = 0.35;
+      ctx.rotate(brightness > 128 ? 0 : Math.PI / 4);
+      ctx.globalAlpha = 0.4;
       ctx.drawImage(satinTexture, -2, -2, 4, 4);
-
       ctx.restore();
     }
   }
 }
+
+/* -------------------------
+   OUTLINE STITCH
+------------------------- */
+function outlineStitch() {
+  ctx.strokeStyle = "rgba(0,0,0,0.35)";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(6, 6, canvas.width - 12, canvas.height - 12);
+}
+
+/* -------------------------
+   CROSS STITCH
+------------------------- */
+function crossStitch() {
+  const step = 10;
+  ctx.strokeStyle = "rgba(0,0,0,0.4)";
+  ctx.lineWidth = 1;
+
+  for (let y = 0; y < canvas.height; y += step) {
+    for (let x = 0; x < canvas.width; x += step) {
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + step, y + step);
+      ctx.moveTo(x + step, y);
+      ctx.lineTo(x, y + step);
+      ctx.stroke();
+    }
+  }
+}
+
+/* -------------------------
+   DOWNLOAD
+------------------------- */
+downloadBtn.addEventListener("click", () => {
+  const a = document.createElement("a");
+  a.download = "maacat-embroidery.png";
+  a.href = canvas.toDataURL("image/png");
+  a.click();
+});
