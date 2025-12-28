@@ -227,6 +227,118 @@ function monochrome(color) {
   ctx.putImageData(imgData, 0, 0);
 }
 
+
+
+
+
+
+case "biscuit": applyBiscuit(); break;
+case "chocolate": applyChocolate(); break;
+case "honey": applyHoney(); break;
+case "butter": applyButter(); break;
+case "dough": applyDough(); break;
+case "clay": applyClay(); break;
+case "ceramic": applyCeramic(); break;
+case "paper": applyPaper(); break;
+case "linen": applyLinen(); break;
+case "fabric": applyFabric(); break;
+
+case "filmFade": applyFilmFade(); break;
+case "retroWarm": applyRetroWarm(); break;
+case "polaroid": applyPolaroid(); break;
+case "dusty": applyDusty(); break;
+case "oldPhoto": applyOldPhoto(); break;
+case "fadedInk": applyFadedInk(); break;
+case "yellowedPaper": applyYellowedPaper(); break;
+case "matteFilm": applyMatteFilm(); break;
+case "analogBlue": applyAnalogBlue(); break;
+case "analogGreen": applyAnalogGreen(); break;
+
+case "pencil": applyPencil(); break;
+case "charcoal": applyCharcoal(); break;
+case "ink": applyInk(); break;
+case "sketch": applySketch(); break;
+case "comic": applyComic(); break;
+case "pastel": applyPastel(); break;
+case "watercolor": applyWatercolor(); break;
+case "crayon": applyCrayon(); break;
+case "chalk": applyChalk(); break;
+case "marker": applyMarker(); break;
+
+case "glow": applyGlow(); break;
+case "softGlow": applySoftGlow(); break;
+case "hardLight": applyHardLight(); break;
+case "dreamy": applyDreamy(); break;
+case "neon": applyNeon(); break;
+case "cyber": applyCyber(); break;
+case "sunset": applySunset(); break;
+case "moonlight": applyMoonlight(); break;
+case "lava": applyLava(); break;
+case "frost": applyFrost(); break;
+
+
+
+function baseEffect(mod){
+  const imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
+  const d = imgData.data;
+  for(let i=0;i<d.length;i+=4){
+    const avg=(d[i]+d[i+1]+d[i+2])/3;
+    d[i]=avg*mod[0]+mod[3]+(Math.random()-0.5)*mod[6];
+    d[i+1]=avg*mod[1]+mod[4]+(Math.random()-0.5)*mod[6];
+    d[i+2]=avg*mod[2]+mod[5]+(Math.random()-0.5)*mod[6];
+  }
+  ctx.putImageData(imgData,0,0);
+}
+
+/* FOOD & MATERIAL */
+const applyBiscuit=()=>baseEffect([1.1,.9,.6,40,20,0,20]);
+const applyChocolate=()=>baseEffect([.8,.5,.3,30,0,0,10]);
+const applyHoney=()=>baseEffect([1.2,1,.5,50,30,0,15]);
+const applyButter=()=>baseEffect([1.3,1.2,.7,40,40,10,10]);
+const applyDough=()=>baseEffect([1,.9,.8,20,10,10,15]);
+const applyClay=()=>baseEffect([1,.7,.6,30,10,10,8]);
+const applyCeramic=()=>baseEffect([1.1,1.1,1.2,0,0,10,3]);
+const applyPaper=()=>baseEffect([1,1,1,10,10,10,12]);
+const applyLinen=()=>baseEffect([1,.95,.9,15,15,10,18]);
+const applyFabric=()=>baseEffect([1,.9,.8,20,15,10,25]);
+
+/* ANALOG */
+const applyFilmFade=()=>baseEffect([.9,.9,.9,30,30,30,5]);
+const applyRetroWarm=()=>baseEffect([1.1,1,.8,30,10,0,5]);
+const applyPolaroid=()=>baseEffect([1.2,1,.9,20,10,10,5]);
+const applyDusty=()=>baseEffect([.9,.9,.9,20,20,20,30]);
+const applyOldPhoto=()=>baseEffect([1,.85,.7,40,20,0,10]);
+const applyFadedInk=()=>baseEffect([.7,.7,.7,50,50,50,5]);
+const applyYellowedPaper=()=>baseEffect([1.1,1,.7,60,40,10,10]);
+const applyMatteFilm=()=>baseEffect([.95,.95,.95,15,15,15,4]);
+const applyAnalogBlue=()=>baseEffect([.8,.9,1.2,0,0,20,5]);
+const applyAnalogGreen=()=>baseEffect([.8,1.2,.8,0,20,0,5]);
+
+/* DRAW */
+const applyPencil=()=>baseEffect([.6,.6,.6,100,100,100,5]);
+const applyCharcoal=()=>baseEffect([.4,.4,.4,120,120,120,10]);
+const applyInk=()=>baseEffect([.3,.3,.3,140,140,140,0]);
+const applySketch=()=>baseEffect([.5,.5,.5,90,90,90,15]);
+const applyComic=()=>baseEffect([1.4,1.4,1.4,-20,-20,-20,0]);
+const applyPastel=()=>baseEffect([1.2,1.1,1,30,30,30,8]);
+const applyWatercolor=()=>baseEffect([1.1,1.1,1.1,20,20,20,20]);
+const applyCrayon=()=>baseEffect([1.3,1.1,.9,10,10,10,30]);
+const applyChalk=()=>baseEffect([.8,.8,.8,80,80,80,25]);
+const applyMarker=()=>baseEffect([1.5,1.5,1.5,-30,-30,-30,0]);
+
+/* LIGHT */
+const applyGlow=()=>baseEffect([1.2,1.2,1.2,10,10,10,3]);
+const applySoftGlow=()=>baseEffect([1.1,1.1,1.1,20,20,20,2]);
+const applyHardLight=()=>baseEffect([1.5,1.5,1.5,-40,-40,-40,0]);
+const applyDreamy=()=>baseEffect([1.1,1,.9,30,20,10,8]);
+const applyNeon=()=>baseEffect([1.6,1.6,1.6,-50,-50,-50,0]);
+const applyCyber=()=>baseEffect([.8,1.4,1.6,0,0,0,0]);
+const applySunset=()=>baseEffect([1.3,1,.6,40,10,0,5]);
+const applyMoonlight=()=>baseEffect([.7,.8,1.2,0,0,20,5]);
+const applyLava=()=>baseEffect([1.6,.6,.3,20,0,0,10]);
+const applyFrost=()=>baseEffect([.9,1.1,1.4,0,10,30,5]);
+
+
 function clamp(v) {
   return Math.max(0, Math.min(255, v));
 }
