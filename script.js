@@ -83,13 +83,9 @@ transformBtn.addEventListener("click", () => {
     case "falseColor":
       falseColor();
       break;
-
-
-
-
-
-
-      case "biscuit": applyBiscuit(); break;
+    case "biscuit":
+      applyBiscuit(); 
+      break;
 case "chocolate": applyChocolate(); break;
 case "honey": applyHoney(); break;
 case "butter": applyButter(); break;
@@ -132,11 +128,6 @@ case "sunset": applySunset(); break;
 case "moonlight": applyMoonlight(); break;
 case "lava": applyLava(); break;
 case "frost": applyFrost(); break;
-
-
-
-
-
 
       
     case "monochrome":
