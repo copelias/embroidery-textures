@@ -83,6 +83,62 @@ transformBtn.addEventListener("click", () => {
     case "falseColor":
       falseColor();
       break;
+
+
+
+
+
+
+      case "biscuit": applyBiscuit(); break;
+case "chocolate": applyChocolate(); break;
+case "honey": applyHoney(); break;
+case "butter": applyButter(); break;
+case "dough": applyDough(); break;
+case "clay": applyClay(); break;
+case "ceramic": applyCeramic(); break;
+case "paper": applyPaper(); break;
+case "linen": applyLinen(); break;
+case "fabric": applyFabric(); break;
+
+case "filmFade": applyFilmFade(); break;
+case "retroWarm": applyRetroWarm(); break;
+case "polaroid": applyPolaroid(); break;
+case "dusty": applyDusty(); break;
+case "oldPhoto": applyOldPhoto(); break;
+case "fadedInk": applyFadedInk(); break;
+case "yellowedPaper": applyYellowedPaper(); break;
+case "matteFilm": applyMatteFilm(); break;
+case "analogBlue": applyAnalogBlue(); break;
+case "analogGreen": applyAnalogGreen(); break;
+
+case "pencil": applyPencil(); break;
+case "charcoal": applyCharcoal(); break;
+case "ink": applyInk(); break;
+case "sketch": applySketch(); break;
+case "comic": applyComic(); break;
+case "pastel": applyPastel(); break;
+case "watercolor": applyWatercolor(); break;
+case "crayon": applyCrayon(); break;
+case "chalk": applyChalk(); break;
+case "marker": applyMarker(); break;
+
+case "glow": applyGlow(); break;
+case "softGlow": applySoftGlow(); break;
+case "hardLight": applyHardLight(); break;
+case "dreamy": applyDreamy(); break;
+case "neon": applyNeon(); break;
+case "cyber": applyCyber(); break;
+case "sunset": applySunset(); break;
+case "moonlight": applyMoonlight(); break;
+case "lava": applyLava(); break;
+case "frost": applyFrost(); break;
+
+
+
+
+
+
+      
     case "monochrome":
       monochrome([180, 120, 70]);
       break;
@@ -232,49 +288,7 @@ function monochrome(color) {
 
 
 
-case "biscuit": applyBiscuit(); break;
-case "chocolate": applyChocolate(); break;
-case "honey": applyHoney(); break;
-case "butter": applyButter(); break;
-case "dough": applyDough(); break;
-case "clay": applyClay(); break;
-case "ceramic": applyCeramic(); break;
-case "paper": applyPaper(); break;
-case "linen": applyLinen(); break;
-case "fabric": applyFabric(); break;
 
-case "filmFade": applyFilmFade(); break;
-case "retroWarm": applyRetroWarm(); break;
-case "polaroid": applyPolaroid(); break;
-case "dusty": applyDusty(); break;
-case "oldPhoto": applyOldPhoto(); break;
-case "fadedInk": applyFadedInk(); break;
-case "yellowedPaper": applyYellowedPaper(); break;
-case "matteFilm": applyMatteFilm(); break;
-case "analogBlue": applyAnalogBlue(); break;
-case "analogGreen": applyAnalogGreen(); break;
-
-case "pencil": applyPencil(); break;
-case "charcoal": applyCharcoal(); break;
-case "ink": applyInk(); break;
-case "sketch": applySketch(); break;
-case "comic": applyComic(); break;
-case "pastel": applyPastel(); break;
-case "watercolor": applyWatercolor(); break;
-case "crayon": applyCrayon(); break;
-case "chalk": applyChalk(); break;
-case "marker": applyMarker(); break;
-
-case "glow": applyGlow(); break;
-case "softGlow": applySoftGlow(); break;
-case "hardLight": applyHardLight(); break;
-case "dreamy": applyDreamy(); break;
-case "neon": applyNeon(); break;
-case "cyber": applyCyber(); break;
-case "sunset": applySunset(); break;
-case "moonlight": applyMoonlight(); break;
-case "lava": applyLava(); break;
-case "frost": applyFrost(); break;
 
 
 
