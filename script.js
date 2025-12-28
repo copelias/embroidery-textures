@@ -295,27 +295,98 @@ function baseEffect(mod){
   ctx.putImageData(imgData,0,0);
 }
 
+
+
+
+
 /* FOOD & MATERIAL */
 /*const applyBiscuit=()=>baseEffect([1.1,.9,.6,40,20,0,20]);  */
-function applyBiscuit() {
-  const imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
-  const d = imgData.data;
+function applyBiscuitEffect() {
+  const w = canvas.width;
+  const h = canvas.height;
 
-  for (let i=0;i<d.length;i+=4) {
-    const noise = (Math.random()-0.5)*40; // porosità
-    d[i]   = clamp(d[i]*1.1 + 30 + noise); // R
-    d[i+1] = clamp(d[i+1]*0.95 + 20 + noise); // G
-    d[i+2] = clamp(d[i+2]*0.7 + noise); // B
+  // === 1. SALVA IMMAGINE ORIGINALE (STAMPATA SOPRA) ===
+  const original = ctx.getImageData(0, 0, w, h);
 
-    // piccoli "buchi"
-    if (Math.random() < 0.015) {
-      d[i] *= 0.7;
-      d[i+1] *= 0.7;
-      d[i+2] *= 0.7;
-    }
+  // === 2. CREA BASE BISCOTTO (SOTTO) ===
+  const biscuit = ctx.createImageData(w, h);
+  const bd = biscuit.data;
+
+  for (let i = 0; i < bd.length; i += 4) {
+    // colore neutro tipo biscotto industriale (avorio/grigio caldo)
+    let base = 220 + (Math.random() - 0.5) * 6;
+
+    bd[i]     = base; // R
+    bd[i + 1] = base; // G
+    bd[i + 2] = base; // B
+    bd[i + 3] = 255;
   }
-  ctx.putImageData(imgData,0,0);
+
+  ctx.putImageData(biscuit, 0, 0);
+
+  // === 3. CREA RILIEVO BISCOTTO (SPESSORE) ===
+  ctx.globalCompositeOperation = "multiply";
+  ctx.globalAlpha = 0.15;
+
+  for (let y = 0; y < h; y += 4) {
+    ctx.fillStyle = "rgba(0,0,0,0.03)";
+    ctx.fillRect(0, y, w, 2);
+  }
+
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = "source-over";
+
+  // === 4. TRASFORMA IMMAGINE IN INCISIONE (STAMPATA SOPRA) ===
+  const od = original.data;
+
+  for (let i = 0; i < od.length; i += 4) {
+    const gray = (od[i] + od[i + 1] + od[i + 2]) / 3;
+
+    // incisione scura ma morbida
+    const ink = 180 - gray * 0.7;
+
+    od[i]     = ink;
+    od[i + 1] = ink;
+    od[i + 2] = ink;
+    od[i + 3] = 255;
+  }
+
+  ctx.putImageData(original, 0, 0);
+
+  // === 5. SIMULA STAMPA SOPRA IL BISCOTTO ===
+  ctx.globalCompositeOperation = "multiply";
+  ctx.globalAlpha = 0.9;
+  ctx.drawImage(canvas, 0, 0);
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = "source-over";
+
+  // === 6. MICRO TEXTURE FINA (FARINA PRESSATA) ===
+  const final = ctx.getImageData(0, 0, w, h);
+  const fd = final.data;
+
+  for (let i = 0; i < fd.length; i += 4) {
+    const noise = (Math.random() - 0.5) * 4;
+    fd[i]     += noise;
+    fd[i + 1] += noise;
+    fd[i + 2] += noise;
+  }
+
+  ctx.putImageData(final, 0, 0);
+
+  // === 7. LIGHT EMBOSS (STAMPO) ===
+  ctx.globalCompositeOperation = "overlay";
+  ctx.globalAlpha = 0.12;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, w, h);
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = "source-over";
 }
+
+
+
+
+
+
 
 
 const applyChocolate=()=>baseEffect([.8,.5,.3,30,0,0,10]);
