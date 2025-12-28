@@ -296,7 +296,28 @@ function baseEffect(mod){
 }
 
 /* FOOD & MATERIAL */
-const applyBiscuit=()=>baseEffect([1.1,.9,.6,40,20,0,20]);
+/*const applyBiscuit=()=>baseEffect([1.1,.9,.6,40,20,0,20]);  */
+function applyBiscuit() {
+  const imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
+  const d = imgData.data;
+
+  for (let i=0;i<d.length;i+=4) {
+    const noise = (Math.random()-0.5)*40; // porosità
+    d[i]   = clamp(d[i]*1.1 + 30 + noise); // R
+    d[i+1] = clamp(d[i+1]*0.95 + 20 + noise); // G
+    d[i+2] = clamp(d[i+2]*0.7 + noise); // B
+
+    // piccoli "buchi"
+    if (Math.random() < 0.015) {
+      d[i] *= 0.7;
+      d[i+1] *= 0.7;
+      d[i+2] *= 0.7;
+    }
+  }
+  ctx.putImageData(imgData,0,0);
+}
+
+
 const applyChocolate=()=>baseEffect([.8,.5,.3,30,0,0,10]);
 const applyHoney=()=>baseEffect([1.2,1,.5,50,30,0,15]);
 const applyButter=()=>baseEffect([1.3,1.2,.7,40,40,10,10]);
