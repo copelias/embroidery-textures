@@ -442,6 +442,9 @@ const applyFrost=()=>baseEffect([.9,1.1,1.4,0,10,30,5]);
 
 
 
+// ================================
+// EMBROIDERY PATCH SATIN EFFECT
+// ================================
 function applyEmbroiderySatin() {
   const w = canvas.width;
   const h = canvas.height;
@@ -451,13 +454,14 @@ function applyEmbroiderySatin() {
   const imageData = ctx.getImageData(0, 0, w, h);
   const data = imageData.data;
 
+  // Sfondo base (puoi cambiare colore se vuoi)
   ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = "#f5f1e8";
+  ctx.fillStyle = "#f5f1e8"; // cream color simile al tessuto
   ctx.fillRect(0, 0, w, h);
 
-  const stitchSpacing = 3;
-  const stitchLength = 6;
-  const threadThickness = 1.8;
+  const stitchSpacing = 4; // distanza tra punti filo
+  const stitchLength = 6;  // lunghezza filo
+  const threadThickness = 1.5; // spessore filo
 
   for (let y = 0; y < h; y += stitchSpacing) {
     for (let x = 0; x < w; x += stitchSpacing) {
@@ -467,14 +471,15 @@ function applyEmbroiderySatin() {
       const b = data[i + 2];
       const a = data[i + 3];
 
-      if (a < 80) continue;
+      if (a < 30) continue; // salta trasparenze
 
-      const angle =
-        ((r + g + b) % 20) * 0.1 + Math.sin(y * 0.05) * 0.3;
+      // calcolo angolo leggero per simulare il filo satin
+      const angle = ((r + g + b) % 20) * 0.1 + Math.sin(y * 0.05) * 0.3;
 
       const dx = Math.cos(angle) * stitchLength;
       const dy = Math.sin(angle) * stitchLength;
 
+      // Ombra filo
       ctx.strokeStyle = `rgba(0,0,0,0.15)`;
       ctx.lineWidth = threadThickness + 0.6;
       ctx.beginPath();
@@ -482,6 +487,7 @@ function applyEmbroiderySatin() {
       ctx.lineTo(x + dx + 0.5, y + dy + 0.5);
       ctx.stroke();
 
+      // Colore filo satin
       ctx.strokeStyle = `rgb(${r},${g},${b})`;
       ctx.lineWidth = threadThickness;
       ctx.beginPath();
@@ -489,6 +495,7 @@ function applyEmbroiderySatin() {
       ctx.lineTo(x + dx, y + dy);
       ctx.stroke();
 
+      // Highlight leggero per effetto lucido satin
       ctx.strokeStyle = `rgba(255,255,255,0.25)`;
       ctx.lineWidth = 0.6;
       ctx.beginPath();
@@ -498,13 +505,14 @@ function applyEmbroiderySatin() {
     }
   }
 
+  // Bordo patch
   ctx.strokeStyle = "#d8d1c4";
   ctx.lineWidth = 6;
   ctx.strokeRect(3, 3, w - 6, h - 6);
 }
 
-
 function clamp(v) {
   return Math.max(0, Math.min(255, v));
 }
+
 
