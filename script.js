@@ -99,73 +99,68 @@ function applyCrayon() {
   const w = canvas.width;
   const h = canvas.height;
 
-  // Leggiamo i colori originali
+  // Prendiamo i colori originali
   ctx.drawImage(img, 0, 0, w, h);
   const imageData = ctx.getImageData(0, 0, w, h);
   const data = imageData.data;
 
-  // Sfondo carta
+  // Carta
   ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = "#f8f3ea";
+  ctx.fillStyle = "#f6f1e7";
   ctx.fillRect(0, 0, w, h);
 
-  const spacing = 6;          // distanza tra passate
-  const strokeLength = 18;    // lunghezza pastello
-  const thickness = 7;        // MOLTO SPESSO
-  const opacity = 0.55;
+  const spacing = 7;          // distanza tra zone
+  const strokeLen = 14;      // tratti corti (NON lunghi)
+  const baseThickness = 6;   // pastello spesso
+  const angle = 0;           // stessa direzione (orizzontale)
 
-  // 👉 direzione UNICA (orizzontale, stile bambino)
-  const angle = 0; // 0 = orizzontale, Math.PI/2 = verticale
-
-  const dx = Math.cos(angle) * strokeLength;
-  const dy = Math.sin(angle) * strokeLength;
+  const dx = Math.cos(angle);
+  const dy = Math.sin(angle);
 
   for (let y = 0; y < h; y += spacing) {
     for (let x = 0; x < w; x += spacing) {
+
       const i = (y * w + x) * 4;
       const r = data[i];
       const g = data[i + 1];
       const b = data[i + 2];
       const a = data[i + 3];
-
       if (a < 60) continue;
 
-      // Primo strato (cera principale)
-      ctx.strokeStyle = `rgba(${r},${g},${b},${opacity})`;
-      ctx.lineWidth = thickness;
-      ctx.lineCap = "round";
+      // 🧠 RIPASSA PIÙ VOLTE (scarabocchio)
+      const passes = 3 + Math.floor(Math.random() * 4);
 
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.lineTo(x + dx, y + dy);
-      ctx.stroke();
+      for (let p = 0; p < passes; p++) {
+        const jitterX = (Math.random() - 0.5) * 4;
+        const jitterY = (Math.random() - 0.5) * 4;
 
-      // Secondo strato (irregolarità cera)
-      ctx.strokeStyle = `rgba(${r},${g},${b},${opacity * 0.7})`;
-      ctx.lineWidth = thickness - 2;
+        const len = strokeLen * (0.6 + Math.random() * 0.6);
+        const thickness =
+          baseThickness * (0.6 + Math.random() * 0.7);
 
-      ctx.beginPath();
-      ctx.moveTo(
-        x + Math.random() * 2,
-        y + Math.random() * 2
-      );
-      ctx.lineTo(
-        x + dx + Math.random() * 2,
-        y + dy + Math.random() * 2
-      );
-      ctx.stroke();
+        ctx.strokeStyle = `rgba(${r},${g},${b},${0.25 + Math.random() * 0.35})`;
+        ctx.lineWidth = thickness;
+        ctx.lineCap = "round";
+
+        ctx.beginPath();
+        ctx.moveTo(x + jitterX, y + jitterY);
+        ctx.lineTo(
+          x + jitterX + dx * len,
+          y + jitterY + dy * len
+        );
+        ctx.stroke();
+      }
     }
   }
 
-  // Grana carta (molto sottile)
-  for (let i = 0; i < w * h * 0.015; i++) {
+  // Grana carta più visibile
+  for (let i = 0; i < w * h * 0.03; i++) {
     const x = Math.random() * w;
     const y = Math.random() * h;
-    ctx.fillStyle = "rgba(0,0,0,0.035)";
+    ctx.fillStyle = "rgba(0,0,0,0.04)";
     ctx.fillRect(x, y, 1, 1);
   }
 }
-
 
 
 
