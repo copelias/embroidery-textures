@@ -129,10 +129,13 @@ case "moonlight": applyMoonlight(); break;
 case "lava": applyLava(); break;
 case "frost": applyFrost(); break;
 
-      
     case "monochrome":
       monochrome([180, 120, 70]);
       break;
+    case "embroidery":
+  applyEmbroiderySatin();
+  break;
+
   }
 
   downloadBtn.disabled = false;
@@ -434,6 +437,71 @@ const applySunset=()=>baseEffect([1.3,1,.6,40,10,0,5]);
 const applyMoonlight=()=>baseEffect([.7,.8,1.2,0,0,20,5]);
 const applyLava=()=>baseEffect([1.6,.6,.3,20,0,0,10]);
 const applyFrost=()=>baseEffect([.9,1.1,1.4,0,10,30,5]);
+
+
+
+
+
+function applyEmbroiderySatin() {
+  const w = canvas.width;
+  const h = canvas.height;
+
+  ctx.drawImage(img, 0, 0, w, h);
+
+  const imageData = ctx.getImageData(0, 0, w, h);
+  const data = imageData.data;
+
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = "#f5f1e8";
+  ctx.fillRect(0, 0, w, h);
+
+  const stitchSpacing = 3;
+  const stitchLength = 6;
+  const threadThickness = 1.8;
+
+  for (let y = 0; y < h; y += stitchSpacing) {
+    for (let x = 0; x < w; x += stitchSpacing) {
+      const i = (y * w + x) * 4;
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      const a = data[i + 3];
+
+      if (a < 80) continue;
+
+      const angle =
+        ((r + g + b) % 20) * 0.1 + Math.sin(y * 0.05) * 0.3;
+
+      const dx = Math.cos(angle) * stitchLength;
+      const dy = Math.sin(angle) * stitchLength;
+
+      ctx.strokeStyle = `rgba(0,0,0,0.15)`;
+      ctx.lineWidth = threadThickness + 0.6;
+      ctx.beginPath();
+      ctx.moveTo(x + 0.5, y + 0.5);
+      ctx.lineTo(x + dx + 0.5, y + dy + 0.5);
+      ctx.stroke();
+
+      ctx.strokeStyle = `rgb(${r},${g},${b})`;
+      ctx.lineWidth = threadThickness;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + dx, y + dy);
+      ctx.stroke();
+
+      ctx.strokeStyle = `rgba(255,255,255,0.25)`;
+      ctx.lineWidth = 0.6;
+      ctx.beginPath();
+      ctx.moveTo(x - 0.3, y - 0.3);
+      ctx.lineTo(x + dx - 0.3, y + dy - 0.3);
+      ctx.stroke();
+    }
+  }
+
+  ctx.strokeStyle = "#d8d1c4";
+  ctx.lineWidth = 6;
+  ctx.strokeRect(3, 3, w - 6, h - 6);
+}
 
 
 function clamp(v) {
