@@ -455,17 +455,15 @@ function applyEmbroiderySatin() {
   const imageData = ctx.getImageData(0, 0, w, h);
   const data = imageData.data;
 
-  // Pulisce canvas e mette uno sfondo chiaro (come stoffa)
+  // Pulisce canvas e mette uno sfondo chiaro tipo stoffa
   ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = "#f5f1e8"; // colore stoffa
+  ctx.fillStyle = "#f5f1e8";
   ctx.fillRect(0, 0, w, h);
 
-  const stitchSpacing = 5;   // aumenta distanza tra punti per fili più grandi
-  const stitchLength = 10;   // lunghezza del filo più lunga
-  const threadThickness = 3; // fili più spessi
-
-  // Direzione fissa dei fili (angolo in radianti)
-  const fixedAngle = Math.PI / 6; // 30 gradi, puoi cambiare
+  const stitchSpacing = 4;     // distanza tra i punti dei fili
+  const stitchLength = 8;      // lunghezza dei fili
+  const threadThickness = 2.5; // spessore dei fili
+  const layers = 3;            // linee sovrapposte per effetto satin
 
   for (let y = 0; y < h; y += stitchSpacing) {
     for (let x = 0; x < w; x += stitchSpacing) {
@@ -475,40 +473,56 @@ function applyEmbroiderySatin() {
       const b = data[i + 2];
       const a = data[i + 3];
 
-      if (a < 80) continue; // ignora trasparenze
+      if (a < 80) continue; // salta trasparenze
 
-      const dx = Math.cos(fixedAngle) * stitchLength;
-      const dy = Math.sin(fixedAngle) * stitchLength;
+      // Direzione principale dei fili (stessa per tutti, leggermente ondulata)
+      const angle = Math.PI / 4 + Math.sin(y * 0.05) * 0.1;
+      const dx = Math.cos(angle) * stitchLength;
+      const dy = Math.sin(angle) * stitchLength;
 
-      // Ombra filo
-      ctx.strokeStyle = `rgba(0,0,0,0.15)`;
-      ctx.lineWidth = threadThickness + 1;
-      ctx.beginPath();
-      ctx.moveTo(x + 0.5, y + 0.5);
-      ctx.lineTo(x + dx + 0.5, y + dy + 0.5);
-      ctx.stroke();
+      for (let l = 0; l < layers; l++) {
+        // Piccolo sfalsamento casuale per rendere più realistico
+        const offsetX = (Math.random() - 0.5) * 2;
+        const offsetY = (Math.random() - 0.5) * 2;
 
-      // Filo colorato dall'immagine
-      ctx.strokeStyle = `rgb(${r},${g},${b})`;
-      ctx.lineWidth = threadThickness;
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.lineTo(x + dx, y + dy);
-      ctx.stroke();
+        // Ombra filo (più scura e spessa)
+        ctx.strokeStyle = `rgba(0,0,0,0.2)`;
+        ctx.lineWidth = threadThickness + 1.5;
+        ctx.beginPath();
+        drawSatinLine(x + offsetX, y + offsetY, dx, dy);
+        ctx.stroke();
 
-      // Lucido filo (satin highlight)
-      ctx.strokeStyle = `rgba(255,255,255,0.25)`;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(x - 0.5, y - 0.5);
-      ctx.lineTo(x + dx - 0.5, y + dy - 0.5);
-      ctx.stroke();
+        // Filo colorato principale
+        ctx.strokeStyle = `rgb(${r},${g},${b})`;
+        ctx.lineWidth = threadThickness;
+        ctx.beginPath();
+        drawSatinLine(x + offsetX, y + offsetY, dx, dy);
+        ctx.stroke();
+
+        // Highlight filo (effetto lucido satin)
+        ctx.strokeStyle = `rgba(255,255,255,0.3)`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        drawSatinLine(x + offsetX, y + offsetY, dx, dy);
+        ctx.stroke();
+      }
     }
   }
 
-  // Bordo finale
+  // Bordo finale tipo stoffa cucita
   ctx.strokeStyle = "#d8d1c4";
   ctx.lineWidth = 6;
   ctx.strokeRect(3, 3, w - 6, h - 6);
-}
 
+  // Funzione helper per disegnare linea leggermente ondulata
+  function drawSatinLine(x, y, dx, dy) {
+    const steps = 5;
+    for (let s = 0; s <= steps; s++) {
+      const t = s / steps;
+      const midX = x + dx * t + Math.sin(t * Math.PI * 2) * 0.5;
+      const midY = y + dy * t + Math.cos(t * Math.PI * 2) * 0.5;
+      if (s === 0) ctx.moveTo(midX, midY);
+      else ctx.lineTo(midX, midY);
+    }
+  }
+}
