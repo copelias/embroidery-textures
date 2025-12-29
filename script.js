@@ -92,7 +92,76 @@ const applyPencil=()=>baseEffect([.6,.6,.6,100,100,100,5]);
 
 const applyPastel=()=>baseEffect([1.2,1.1,1,30,30,30,8]);
 
-const applyCrayon=()=>baseEffect([1.3,1.1,.9,10,10,10,30]);
+
+
+
+function applyCrayon() {
+  const w = canvas.width;
+  const h = canvas.height;
+
+  // Disegniamo l'immagine originale per leggere i colori
+  ctx.drawImage(img, 0, 0, w, h);
+  const imageData = ctx.getImageData(0, 0, w, h);
+  const data = imageData.data;
+
+  // Sfondo carta (bianco sporco)
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = "#fbf7f0";
+  ctx.fillRect(0, 0, w, h);
+
+  const spacing = 4;        // distanza tra tratti
+  const strokeLen = 10;     // lunghezza crayon
+  const pressure = 0.45;    // trasparenza cera
+
+  for (let y = 0; y < h; y += spacing) {
+    for (let x = 0; x < w; x += spacing) {
+      const i = (y * w + x) * 4;
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      const a = data[i + 3];
+
+      if (a < 60) continue;
+
+      // Direzione casuale (scarabocchio bambino)
+      const angle = Math.random() * Math.PI * 2;
+      const dx = Math.cos(angle) * strokeLen;
+      const dy = Math.sin(angle) * strokeLen;
+
+      // Tratto principale
+      ctx.strokeStyle = `rgba(${r},${g},${b},${pressure})`;
+      ctx.lineWidth = 3.2;
+      ctx.lineCap = "round";
+
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + dx, y + dy);
+      ctx.stroke();
+
+      // Secondo passaggio per effetto cera irregolare
+      ctx.strokeStyle = `rgba(${r},${g},${b},${pressure * 0.6})`;
+      ctx.lineWidth = 2;
+
+      ctx.beginPath();
+      ctx.moveTo(x + Math.random() * 2, y + Math.random() * 2);
+      ctx.lineTo(x + dx + Math.random() * 2, y + dy + Math.random() * 2);
+      ctx.stroke();
+    }
+  }
+
+  // Grana carta (puntini)
+  for (let i = 0; i < w * h * 0.02; i++) {
+    const x = Math.random() * w;
+    const y = Math.random() * h;
+    ctx.fillStyle = "rgba(0,0,0,0.04)";
+    ctx.fillRect(x, y, 1, 1);
+  }
+}
+
+
+
+
+
 
 
 
