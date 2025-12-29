@@ -457,12 +457,15 @@ function applyEmbroiderySatin() {
 
   // Pulisce canvas e mette uno sfondo chiaro (come stoffa)
   ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = "#f5f1e8";
+  ctx.fillStyle = "#f5f1e8"; // colore stoffa
   ctx.fillRect(0, 0, w, h);
 
-  const stitchSpacing = 3; // distanza tra punti del filo
-  const stitchLength = 6;  // lunghezza del filo
-  const threadThickness = 1.8; // spessore del filo
+  const stitchSpacing = 5;   // aumenta distanza tra punti per fili più grandi
+  const stitchLength = 10;   // lunghezza del filo più lunga
+  const threadThickness = 3; // fili più spessi
+
+  // Direzione fissa dei fili (angolo in radianti)
+  const fixedAngle = Math.PI / 6; // 30 gradi, puoi cambiare
 
   for (let y = 0; y < h; y += stitchSpacing) {
     for (let x = 0; x < w; x += stitchSpacing) {
@@ -472,23 +475,20 @@ function applyEmbroiderySatin() {
       const b = data[i + 2];
       const a = data[i + 3];
 
-      if (a < 80) continue; // trasparenze
+      if (a < 80) continue; // ignora trasparenze
 
-      // Calcolo angolo del filo per effetto satin (leggermente ondulato)
-      const angle = ((r + g + b) % 20) * 0.1 + Math.sin(y * 0.05) * 0.3;
-
-      const dx = Math.cos(angle) * stitchLength;
-      const dy = Math.sin(angle) * stitchLength;
+      const dx = Math.cos(fixedAngle) * stitchLength;
+      const dy = Math.sin(fixedAngle) * stitchLength;
 
       // Ombra filo
       ctx.strokeStyle = `rgba(0,0,0,0.15)`;
-      ctx.lineWidth = threadThickness + 0.6;
+      ctx.lineWidth = threadThickness + 1;
       ctx.beginPath();
       ctx.moveTo(x + 0.5, y + 0.5);
       ctx.lineTo(x + dx + 0.5, y + dy + 0.5);
       ctx.stroke();
 
-      // Filo colorato (dall'immagine)
+      // Filo colorato dall'immagine
       ctx.strokeStyle = `rgb(${r},${g},${b})`;
       ctx.lineWidth = threadThickness;
       ctx.beginPath();
@@ -496,18 +496,19 @@ function applyEmbroiderySatin() {
       ctx.lineTo(x + dx, y + dy);
       ctx.stroke();
 
-      // Effetto lucido filo
+      // Lucido filo (satin highlight)
       ctx.strokeStyle = `rgba(255,255,255,0.25)`;
-      ctx.lineWidth = 0.6;
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(x - 0.3, y - 0.3);
-      ctx.lineTo(x + dx - 0.3, y + dy - 0.3);
+      ctx.moveTo(x - 0.5, y - 0.5);
+      ctx.lineTo(x + dx - 0.5, y + dy - 0.5);
       ctx.stroke();
     }
   }
 
-  // Bordo finale come stoffa cucita
+  // Bordo finale
   ctx.strokeStyle = "#d8d1c4";
   ctx.lineWidth = 6;
   ctx.strokeRect(3, 3, w - 6, h - 6);
 }
+
