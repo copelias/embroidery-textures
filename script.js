@@ -99,21 +99,17 @@ function applyCrayon() {
   const w = canvas.width;
   const h = canvas.height;
 
-  // Prendiamo i colori originali
+  // Colori originali
   ctx.drawImage(img, 0, 0, w, h);
-  const imageData = ctx.getImageData(0, 0, w, h);
-  const data = imageData.data;
+  const src = ctx.getImageData(0, 0, w, h).data;
 
   // Carta
   ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = "#f6f1e7";
+  ctx.fillStyle = "#f7f2e8";
   ctx.fillRect(0, 0, w, h);
 
-  const spacing = 7;          // distanza tra zone
-  const strokeLen = 14;      // tratti corti (NON lunghi)
-  const baseThickness = 6;   // pastello spesso
-  const angle = 0;           // stessa direzione (orizzontale)
-
+  const spacing = 6;
+  const angle = 0; // stessa direzione
   const dx = Math.cos(angle);
   const dy = Math.sin(angle);
 
@@ -121,47 +117,64 @@ function applyCrayon() {
     for (let x = 0; x < w; x += spacing) {
 
       const i = (y * w + x) * 4;
-      const r = data[i];
-      const g = data[i + 1];
-      const b = data[i + 2];
-      const a = data[i + 3];
-      if (a < 60) continue;
+      const r = src[i];
+      const g = src[i + 1];
+      const b = src[i + 2];
+      const a = src[i + 3];
+      if (a < 50) continue;
 
-      // 🧠 RIPASSA PIÙ VOLTE (scarabocchio)
-      const passes = 3 + Math.floor(Math.random() * 4);
+      // più passate = più cera
+      const passes = 4 + Math.floor(Math.random() * 3);
 
       for (let p = 0; p < passes; p++) {
-        const jitterX = (Math.random() - 0.5) * 4;
-        const jitterY = (Math.random() - 0.5) * 4;
+        const len = 18 + Math.random() * 10;
+        const thick = 7 + Math.random() * 4;
 
-        const len = strokeLen * (0.6 + Math.random() * 0.6);
-        const thickness =
-          baseThickness * (0.6 + Math.random() * 0.7);
+        const jx = (Math.random() - 0.5) * 3;
+        const jy = (Math.random() - 0.5) * 3;
 
-        ctx.strokeStyle = `rgba(${r},${g},${b},${0.25 + Math.random() * 0.35})`;
-        ctx.lineWidth = thickness;
+        // STRATO SCURO (accumulo)
+        ctx.strokeStyle = `rgb(${r * 0.75},${g * 0.75},${b * 0.75})`;
+        ctx.lineWidth = thick + 2;
         ctx.lineCap = "round";
-
         ctx.beginPath();
-        ctx.moveTo(x + jitterX, y + jitterY);
+        ctx.moveTo(x + jx, y + jy);
+        ctx.lineTo(x + jx + dx * len, y + jy + dy * len);
+        ctx.stroke();
+
+        // STRATO CENTRALE (pigmento pieno)
+        ctx.strokeStyle = `rgb(${r},${g},${b})`;
+        ctx.lineWidth = thick;
+        ctx.beginPath();
+        ctx.moveTo(x + jx, y + jy);
+        ctx.lineTo(x + jx + dx * len, y + jy + dy * len);
+        ctx.stroke();
+
+        // LUCE CEROSA (3D)
+        ctx.strokeStyle = `rgba(255,255,255,0.35)`;
+        ctx.lineWidth = thick * 0.3;
+        ctx.beginPath();
+        ctx.moveTo(x + jx - 1, y + jy - 1);
         ctx.lineTo(
-          x + jitterX + dx * len,
-          y + jitterY + dy * len
+          x + jx + dx * len - 1,
+          y + jy + dy * len - 1
         );
         ctx.stroke();
       }
     }
   }
 
-  // Grana carta più visibile
-  for (let i = 0; i < w * h * 0.03; i++) {
-    const x = Math.random() * w;
-    const y = Math.random() * h;
-    ctx.fillStyle = "rgba(0,0,0,0.04)";
-    ctx.fillRect(x, y, 1, 1);
+  // Grana cera / carta
+  for (let i = 0; i < w * h * 0.05; i++) {
+    ctx.fillStyle = "rgba(0,0,0,0.03)";
+    ctx.fillRect(
+      Math.random() * w,
+      Math.random() * h,
+      1,
+      1
+    );
   }
 }
-
 
 
 
