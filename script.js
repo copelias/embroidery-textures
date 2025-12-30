@@ -55,7 +55,10 @@ transformBtn.addEventListener("click", () => {
     
 case "paper": applyPaper(); break;
 
-case "pencil": applyPencil(); break;
+case "game_block":
+  applyGameBlockEffect();
+  break;
+
 
 case "embroidery_satin":
     applyEmbroiderySatin();
@@ -89,8 +92,62 @@ downloadBtn.addEventListener("click", () => {
 
 const applyPaper=()=>baseEffect([1,1,1,10,10,10,12]);
 
-/* DRAW */
-const applyPencil=()=>baseEffect([.6,.6,.6,100,100,100,5]);
+/* FUNCTION game block*/
+function applyGameBlockEffect() {
+  g.save();
+
+  const bw = canvas.width;
+  const bh = canvas.height;
+
+  // Disegna immagine originale
+  g.drawImage(img, 0, 0, bw, bh);
+  const imageData = g.getImageData(0, 0, bw, bh);
+  const data = imageData.data;
+
+  g.clearRect(0, 0, bw, bh);
+
+  const blockSize = 12; // ↑ più grande = più Minecraft
+
+  for (let y = 0; y < bh; y += blockSize) {
+    for (let x = 0; x < bw; x += blockSize) {
+
+      let r = 0, gCol = 0, b = 0, count = 0;
+
+      for (let dy = 0; dy < blockSize; dy++) {
+        for (let dx = 0; dx < blockSize; dx++) {
+          const px = ((y + dy) * bw + (x + dx)) * 4;
+          if (px >= data.length) continue;
+
+          r += data[px];
+          gCol += data[px + 1];
+          b += data[px + 2];
+          count++;
+        }
+      }
+
+      r = Math.floor(r / count);
+      gCol = Math.floor(gCol / count);
+      b = Math.floor(b / count);
+
+      // Blocco base
+      g.fillStyle = `rgb(${r},${gCol},${b})`;
+      g.fillRect(x, y, blockSize, blockSize);
+
+      // Ombra basso-destra
+      g.fillStyle = "rgba(0,0,0,0.25)";
+      g.fillRect(x, y + blockSize - 2, blockSize, 2);
+      g.fillRect(x + blockSize - 2, y, 2, blockSize);
+
+      // Highlight alto-sinistra
+      g.fillStyle = "rgba(255,255,255,0.25)";
+      g.fillRect(x, y, blockSize, 2);
+      g.fillRect(x, y, 2, blockSize);
+    }
+  }
+
+  g.restore();
+}
+
 
 
 
