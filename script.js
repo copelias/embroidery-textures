@@ -57,7 +57,9 @@ case "paper": applyPaper(); break;
 
 case "pencil": applyPencil(); break;
 
-case "pastel": applyPastel(); break;
+case "embroidery_satin":
+    applyEmbroiderySatin();
+    break;
 
 case "crayon": applyCrayon(); break;
 
@@ -90,7 +92,81 @@ const applyPaper=()=>baseEffect([1,1,1,10,10,10,12]);
 /* DRAW */
 const applyPencil=()=>baseEffect([.6,.6,.6,100,100,100,5]);
 
-const applyPastel=()=>baseEffect([1.2,1.1,1,30,30,30,8]);
+
+
+/* FUNCTION EMBROIDERY SATIN */ 
+
+function applyEmbroiderySatin() {
+  const satinW = canvas.width;
+  const satinH = canvas.height;
+
+  // Disegna immagine originale
+  ctx.drawImage(img, 0, 0, satinW, satinH);
+
+  const satinImageData = ctx.getImageData(0, 0, satinW, satinH);
+  const satinData = satinImageData.data;
+
+  // Sfondo tipo stoffa
+  ctx.clearRect(0, 0, satinW, satinH);
+  ctx.fillStyle = "#f5f1e8";
+  ctx.fillRect(0, 0, satinW, satinH);
+
+  const satinSpacing = 5;
+  const satinLength = 10;
+  const satinThickness = 3;
+
+  const satinAngle = Math.PI / 6; // 30°
+
+  for (let y = 0; y < satinH; y += satinSpacing) {
+    for (let x = 0; x < satinW; x += satinSpacing) {
+      const idx = (y * satinW + x) * 4;
+      const r = satinData[idx];
+      const g = satinData[idx + 1];
+      const b = satinData[idx + 2];
+      const a = satinData[idx + 3];
+
+      if (a < 80) continue;
+
+      const dx = Math.cos(satinAngle) * satinLength;
+      const dy = Math.sin(satinAngle) * satinLength;
+
+      // Ombra
+      ctx.strokeStyle = "rgba(0,0,0,0.15)";
+      ctx.lineWidth = satinThickness + 1;
+      ctx.beginPath();
+      ctx.moveTo(x + 0.5, y + 0.5);
+      ctx.lineTo(x + dx + 0.5, y + dy + 0.5);
+      ctx.stroke();
+
+      // Filo colorato
+      ctx.strokeStyle = `rgb(${r},${g},${b})`;
+      ctx.lineWidth = satinThickness;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + dx, y + dy);
+      ctx.stroke();
+
+      // Highlight satin
+      ctx.strokeStyle = "rgba(255,255,255,0.25)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x - 0.5, y - 0.5);
+      ctx.lineTo(x + dx - 0.5, y + dy - 0.5);
+      ctx.stroke();
+    }
+  }
+
+  // Bordo finale
+  ctx.strokeStyle = "#d8d1c4";
+  ctx.lineWidth = 6;
+  ctx.strokeRect(3, 3, satinW - 6, satinH - 6);
+}
+
+
+
+
+
+
 
 
 
