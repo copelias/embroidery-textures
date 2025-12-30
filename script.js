@@ -99,71 +99,76 @@ function applyCrayon() {
   const w = canvas.width;
   const h = canvas.height;
 
-  // Disegno immagine originale
+  // Disegno immagine
   ctx.drawImage(img, 0, 0, w, h);
-  const imageData = ctx.getImageData(0, 0, w, h);
-  const data = imageData.data;
+  const imgData = ctx.getImageData(0, 0, w, h).data;
 
-  // Sfondo carta
+  // Carta
   ctx.clearRect(0, 0, w, h);
   ctx.fillStyle = "#f6f1e7";
   ctx.fillRect(0, 0, w, h);
 
-  // PARAMETRI CRAYON (IMPORTANTI)
-  const spacing = 6;            // distanza tra zone
-  const layers = 22;            // quante volte ripassa
-  const strokeLength = 18;      // lunghezza tratto
-  const baseThickness = 6;      // spessore crayon
-  const angle = Math.PI / 4;    // diagonale ↘ fissa
+  const bandHeight = 22;        // ALTEZZA fascia (molto grande)
+  const strokeLength = w * 1.5;
+  const angle = Math.PI / 4;    // diagonale ↘
+  const layers = 6;             // ripassi
 
-  for (let y = 0; y < h; y += spacing) {
-    for (let x = 0; x < w; x += spacing) {
+  for (let y = -h; y < h * 2; y += bandHeight) {
 
-      const i = (y * w + x) * 4;
-      const r = data[i];
-      const g = data[i + 1];
-      const b = data[i + 2];
-      const a = data[i + 3];
-      if (a < 40) continue;
+    // colore medio della fascia
+    let r = 0, g = 0, b = 0, count = 0;
 
-      // stratificazione (ripassa come un bambino)
-      for (let l = 0; l < layers; l++) {
+    for (let x = 0; x < w; x += 8) {
+      const px = Math.floor((y + h / 2));
+      if (px < 0 || px >= h) continue;
+      const i = (px * w + x) * 4;
+      r += imgData[i];
+      g += imgData[i + 1];
+      b += imgData[i + 2];
+      count++;
+    }
 
-        const pressure = Math.random() * 0.6 + 0.4;
-        const thickness = baseThickness * pressure;
+    if (!count) continue;
+    r = Math.floor(r / count);
+    g = Math.floor(g / count);
+    b = Math.floor(b / count);
 
-        const jitterX = (Math.random() - 0.5) * 2;
-        const jitterY = (Math.random() - 0.5) * 2;
+    for (let l = 0; l < layers; l++) {
 
-        const dx = Math.cos(angle) * strokeLength;
-        const dy = Math.sin(angle) * strokeLength;
+      const pressure = Math.random() * 0.5 + 0.7;
+      const thickness = 12 * pressure;
 
-        // ombra cerosa (rilievo)
-        ctx.strokeStyle = `rgba(0,0,0,0.12)`;
-        ctx.lineWidth = thickness + 2;
+      const jitterX = (Math.random() - 0.5) * 6;
+      const jitterY = (Math.random() - 0.5) * 6;
+
+      const dx = Math.cos(angle) * strokeLength;
+      const dy = Math.sin(angle) * strokeLength;
+
+      // Ombra crayon (rilievo)
+      ctx.strokeStyle = "rgba(0,0,0,0.15)";
+      ctx.lineWidth = thickness + 4;
+      ctx.beginPath();
+      ctx.moveTo(-w + jitterX + 3, y + jitterY + 3);
+      ctx.lineTo(dx - w + jitterX + 3, y + dy + jitterY + 3);
+      ctx.stroke();
+
+      // Crayon vero
+      ctx.strokeStyle = `rgb(${r},${g},${b})`;
+      ctx.lineWidth = thickness;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(-w + jitterX, y + jitterY);
+      ctx.lineTo(dx - w + jitterX, y + dy + jitterY);
+      ctx.stroke();
+
+      // Lucido ceroso spezzato
+      if (Math.random() > 0.6) {
+        ctx.strokeStyle = "rgba(255,255,255,0.25)";
+        ctx.lineWidth = thickness * 0.3;
         ctx.beginPath();
-        ctx.moveTo(x + jitterX + 1, y + jitterY + 1);
-        ctx.lineTo(x + dx + jitterX + 1, y + dy + jitterY + 1);
+        ctx.moveTo(-w + jitterX - 2, y + jitterY - 2);
+        ctx.lineTo(dx - w + jitterX - 2, y + dy + jitterY - 2);
         ctx.stroke();
-
-        // crayon vero (colore pieno)
-        ctx.strokeStyle = `rgb(${r},${g},${b})`;
-        ctx.lineWidth = thickness;
-        ctx.lineCap = "round";
-        ctx.beginPath();
-        ctx.moveTo(x + jitterX, y + jitterY);
-        ctx.lineTo(x + dx + jitterX, y + dy + jitterY);
-        ctx.stroke();
-
-        // riflesso ceroso spezzato
-        if (Math.random() > 0.65) {
-          ctx.strokeStyle = `rgba(255,255,255,0.25)`;
-          ctx.lineWidth = thickness * 0.3;
-          ctx.beginPath();
-          ctx.moveTo(x + jitterX - 1, y + jitterY - 1);
-          ctx.lineTo(x + dx + jitterX - 1, y + dy + jitterY - 1);
-          ctx.stroke();
-        }
       }
     }
   }
