@@ -99,79 +99,59 @@ function applyCrayon() {
   const w = canvas.width;
   const h = canvas.height;
 
-  // Disegno immagine
+  // immagine di riferimento (NON la ridisegniamo pixel per pixel)
   ctx.drawImage(img, 0, 0, w, h);
-  const imgData = ctx.getImageData(0, 0, w, h).data;
+  const ref = ctx.getImageData(0, 0, w, h);
 
-  // Carta
+  // carta
   ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = "#f6f1e7";
+  ctx.fillStyle = "#f7f2e8";
   ctx.fillRect(0, 0, w, h);
 
-  const bandHeight = 22;        // ALTEZZA fascia (molto grande)
-  const strokeLength = w * 1.5;
-  const angle = Math.PI / 4;    // diagonale ↘
-  const layers = 6;             // ripassi
+  const angle = Math.PI / 4; // diagonale
+  const spacing = 18;       // distanza tra tratti (LARGA)
+  const strokeLen = w * 1.3;
+  const layers = 5;         // ripassi
 
-  for (let y = -h; y < h * 2; y += bandHeight) {
+  ctx.globalAlpha = 0.85;
 
-    // colore medio della fascia
-    let r = 0, g = 0, b = 0, count = 0;
-
-    for (let x = 0; x < w; x += 8) {
-      const px = Math.floor((y + h / 2));
-      if (px < 0 || px >= h) continue;
-      const i = (px * w + x) * 4;
-      r += imgData[i];
-      g += imgData[i + 1];
-      b += imgData[i + 2];
-      count++;
-    }
-
-    if (!count) continue;
-    r = Math.floor(r / count);
-    g = Math.floor(g / count);
-    b = Math.floor(b / count);
-
+  for (let y = -h; y < h * 2; y += spacing) {
     for (let l = 0; l < layers; l++) {
 
-      const pressure = Math.random() * 0.5 + 0.7;
-      const thickness = 12 * pressure;
+      const jitter = (Math.random() - 0.5) * 6;
+      const sampleY = Math.min(h - 1, Math.max(0, Math.floor(y + h / 2)));
 
-      const jitterX = (Math.random() - 0.5) * 6;
-      const jitterY = (Math.random() - 0.5) * 6;
-
-      const dx = Math.cos(angle) * strokeLength;
-      const dy = Math.sin(angle) * strokeLength;
-
-      // Ombra crayon (rilievo)
-      ctx.strokeStyle = "rgba(0,0,0,0.15)";
-      ctx.lineWidth = thickness + 4;
-      ctx.beginPath();
-      ctx.moveTo(-w + jitterX + 3, y + jitterY + 3);
-      ctx.lineTo(dx - w + jitterX + 3, y + dy + jitterY + 3);
-      ctx.stroke();
-
-      // Crayon vero
-      ctx.strokeStyle = `rgb(${r},${g},${b})`;
-      ctx.lineWidth = thickness;
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      ctx.moveTo(-w + jitterX, y + jitterY);
-      ctx.lineTo(dx - w + jitterX, y + dy + jitterY);
-      ctx.stroke();
-
-      // Lucido ceroso spezzato
-      if (Math.random() > 0.6) {
-        ctx.strokeStyle = "rgba(255,255,255,0.25)";
-        ctx.lineWidth = thickness * 0.3;
-        ctx.beginPath();
-        ctx.moveTo(-w + jitterX - 2, y + jitterY - 2);
-        ctx.lineTo(dx - w + jitterX - 2, y + dy + jitterY - 2);
-        ctx.stroke();
+      // campione colore AMPIO (non pixel singolo)
+      let r = 0, g = 0, b = 0, c = 0;
+      for (let x = 0; x < w; x += 20) {
+        const i = (sampleY * w + x) * 4;
+        r += ref.data[i];
+        g += ref.data[i + 1];
+        b += ref.data[i + 2];
+        c++;
       }
+      if (!c) continue;
+
+      r = Math.round(r / c);
+      g = Math.round(g / c);
+      b = Math.round(b / c);
+
+      const dx = Math.cos(angle) * strokeLen;
+      const dy = Math.sin(angle) * strokeLen;
+
+      // MATITA COLORATA (spessa, morbida)
+      ctx.strokeStyle = `rgb(${r},${g},${b})`;
+      ctx.lineWidth = 14 + Math.random() * 4;
+      ctx.lineCap = "round";
+
+      ctx.beginPath();
+      ctx.moveTo(-w, y + jitter);
+      ctx.lineTo(dx - w, y + dy + jitter);
+      ctx.stroke();
     }
   }
+
+  ctx.globalAlpha = 1;
 }
 
 
