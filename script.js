@@ -99,59 +99,50 @@ function applyAluminiumEmboss() {
   const w = canvas.width;
   const h = canvas.height;
 
-  // Disegna immagine originale
+  // Prendi immagine
   g.drawImage(img, 0, 0, w, h);
-  const imageData = g.getImageData(0, 0, w, h);
-  const data = imageData.data;
+  const imgData = g.getImageData(0, 0, w, h);
+  const d = imgData.data;
 
   g.clearRect(0, 0, w, h);
 
-  const step = 3; // più piccolo = più dettaglio
-  const lightX = -1; // direzione luce
-  const lightY = -1;
+  const step = 2;           // dettaglio
+  const embossStrength = 1.2;
 
   for (let y = step; y < h - step; y += step) {
     for (let x = step; x < w - step; x += step) {
 
       const i = (y * w + x) * 4;
+      const iL = (y * w + (x - step)) * 4;
+      const iU = ((y - step) * w + x) * 4;
 
-      // luminanza
-      const r = data[i];
-      const gCol = data[i + 1];
-      const b = data[i + 2];
-      const lum = (r + gCol + b) / 3;
+      const lum  = (d[i]  + d[i+1]  + d[i+2])  / 3;
+      const lumL = (d[iL] + d[iL+1] + d[iL+2]) / 3;
+      const lumU = (d[iU] + d[iU+1] + d[iU+2]) / 3;
 
-      // pixel vicino (per rilievo)
-      const i2 = ((y + lightY * step) * w + (x + lightX * step)) * 4;
-      const r2 = data[i2];
-      const g2 = data[i2 + 1];
-      const b2 = data[i2 + 2];
-      const lum2 = (r2 + g2 + b2) / 3;
+      const relief = (lum - lumL + lum - lumU) * embossStrength;
 
-      const height = lum - lum2;
+      let metal = 200 + relief;
+      metal = Math.max(150, Math.min(240, metal));
 
-      // base alluminio
-      let base = 200 + height * 0.6;
-      base = Math.max(160, Math.min(235, base));
-
-      g.fillStyle = `rgb(${base},${base},${base})`;
+      g.fillStyle = `rgb(${metal},${metal},${metal})`;
       g.fillRect(x, y, step, step);
     }
   }
 
-  // grana metallo
-  g.globalAlpha = 0.15;
-  for (let i = 0; i < 15000; i++) {
+  // grana alluminio
+  g.globalAlpha = 0.18;
+  for (let i = 0; i < 12000; i++) {
     const rx = Math.random() * w;
     const ry = Math.random() * h;
-    const v = 180 + Math.random() * 40;
+    const v = 180 + Math.random() * 50;
     g.fillStyle = `rgb(${v},${v},${v})`;
     g.fillRect(rx, ry, 1, 1);
   }
   g.globalAlpha = 1;
 
   // bordo foglio
-  g.strokeStyle = "rgba(120,120,120,0.6)";
+  g.strokeStyle = "rgba(120,120,120,0.7)";
   g.lineWidth = 4;
   g.strokeRect(2, 2, w - 4, h - 4);
 
