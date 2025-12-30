@@ -96,16 +96,15 @@ downloadBtn.addEventListener("click", () => {
 function applyAluminiumEmboss() {
   const w = canvas.width;
   const h = canvas.height;
-
   ctx.save();
 
-  // disegna immagine
+  // disegna immagine base
   ctx.drawImage(img, 0, 0, w, h);
 
-  // effetto emboss
+  // effetto emboss più marcato
   const imageData = ctx.getImageData(0, 0, w, h);
   const data = imageData.data;
-  const embossStrength = 1.5;
+  const embossStrength = 2.5; // più scolpito
 
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
@@ -113,10 +112,7 @@ function applyAluminiumEmboss() {
       const iRight = i + 4 < data.length ? i + 4 : i;
       const iDown = i + w * 4 < data.length ? i + w * 4 : i;
 
-      const r = data[i];
-      const g = data[i + 1];
-      const b = data[i + 2];
-
+      const r = data[i], g = data[i + 1], b = data[i + 2];
       const rDiff = data[iRight] - r + data[iDown] - r;
       const gDiff = data[iRight + 1] - g + data[iDown + 1] - g;
       const bDiff = data[iRight + 2] - b + data[iDown + 2] - b;
@@ -126,30 +122,44 @@ function applyAluminiumEmboss() {
       data[i + 2] = 128 + embossStrength * bDiff;
     }
   }
-
   ctx.putImageData(imageData, 0, 0);
 
-  // riflesso leggero
-  const gradient = ctx.createLinearGradient(0, 0, w, h);
-  gradient.addColorStop(0, "rgba(255,255,255,0.05)");
-  gradient.addColorStop(1, "rgba(0,0,0,0.05)");
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, w, h);
+  // simuliamo pieghe casuali con gradienti leggeri
+  for (let i = 0; i < 150; i++) {
+    const gx = Math.random() * w;
+    const gy = Math.random() * h;
+    const length = 20 + Math.random() * 50;
+    const angle = Math.random() * Math.PI * 2;
+    const grad = ctx.createLinearGradient(
+      gx, gy,
+      gx + length * Math.cos(angle),
+      gy + length * Math.sin(angle)
+    );
+    const v = 200 + Math.random() * 55;
+    grad.addColorStop(0, `rgba(${v},${v},${v},0.15)`);
+    grad.addColorStop(1, `rgba(${v},${v},${v},0)`);
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 1 + Math.random() * 2;
+    ctx.beginPath();
+    ctx.moveTo(gx, gy);
+    ctx.lineTo(gx + length * Math.cos(angle), gy + length * Math.sin(angle));
+    ctx.stroke();
+  }
 
-  // grana alluminio
-  ctx.globalAlpha = 0.18;
-  for (let i = 0; i < 12000; i++) {
+  // grana densa e micro riflessi
+  ctx.globalAlpha = 0.2;
+  for (let i = 0; i < 30000; i++) {
     const rx = Math.random() * w;
     const ry = Math.random() * h;
-    const v = 180 + Math.random() * 50;
+    const v = 180 + Math.random() * 75;
     ctx.fillStyle = `rgb(${v},${v},${v})`;
     ctx.fillRect(rx, ry, 1, 1);
   }
   ctx.globalAlpha = 1;
 
-  // bordo foglio
-  ctx.strokeStyle = "rgba(120,120,120,0.7)";
-  ctx.lineWidth = 4;
+  // bordo più definito
+  ctx.strokeStyle = "rgba(120,120,120,0.9)";
+  ctx.lineWidth = 5;
   ctx.strokeRect(2, 2, w - 4, h - 4);
 
   ctx.restore();
