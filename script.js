@@ -183,7 +183,7 @@ function applyGameBlockEffect() {
 
   ctx.clearRect(0, 0, bw, bh);
 
-  const blockSize = 5; // ↑ più grande = più stile Minecraft
+  const blockSize = 20; // ↑ più grande = più stile Minecraft
 
   for (let y = 0; y < bh; y += blockSize) {
     for (let x = 0; x < bw; x += blockSize) {
