@@ -99,49 +99,77 @@ function applyAluminiumEmboss() {
   ctx.save();
 
   /* =================================================
-     1️⃣ CREATE SATIN HEIGHT MAP (PRIVATE)
+     1️⃣ OFFSCREEN CANVAS → EMBROIDERY SATIN ORIGINALE
      ================================================= */
-  ctx.drawImage(img, 0, 0, w, h);
-  const baseData = ctx.getImageData(0, 0, w, h);
+  const off = document.createElement("canvas");
+  off.width = w;
+  off.height = h;
+  const offCtx = off.getContext("2d");
 
-  ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = "#eeeeee";
-  ctx.fillRect(0, 0, w, h);
+  // === CODICE TUO (IDENTICO) ===
+  offCtx.drawImage(img, 0, 0, w, h);
 
-  const satinSpacing2 = 5;
-  const satinLength2 = 10;
-  const satinThickness2 = 6;
-  const satinAngle2 = Math.PI / 6;
+  const satinImageDataX = offCtx.getImageData(0, 0, w, h);
+  const satinDataX = satinImageDataX.data;
 
-  for (let y = 0; y < h; y += satinSpacing2) {
-    for (let x = 0; x < w; x += satinSpacing2) {
-      const i = (y * w + x) * 4;
-      if (baseData.data[i + 3] < 80) continue;
+  offCtx.clearRect(0, 0, w, h);
+  offCtx.fillStyle = "#f5f1e8";
+  offCtx.fillRect(0, 0, w, h);
 
-      const dx = Math.cos(satinAngle2) * satinLength2;
-      const dy = Math.sin(satinAngle2) * satinLength2;
+  const satinSpacingX = 5;
+  const satinLengthX = 10;
+  const satinThicknessX = 6;
+  const satinAngleX = Math.PI / 6;
 
-      ctx.strokeStyle = "rgb(220,220,220)";
-      ctx.lineWidth = satinThickness2;
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.lineTo(x + dx, y + dy);
-      ctx.stroke();
+  for (let y = 0; y < h; y += satinSpacingX) {
+    for (let x = 0; x < w; x += satinSpacingX) {
+      const idx = (y * w + x) * 4;
+      const r = satinDataX[idx];
+      const g = satinDataX[idx + 1];
+      const b = satinDataX[idx + 2];
+      const a = satinDataX[idx + 3];
+      if (a < 80) continue;
+
+      const dx = Math.cos(satinAngleX) * satinLengthX;
+      const dy = Math.sin(satinAngleX) * satinLengthX;
+
+      // Ombra
+      offCtx.strokeStyle = "rgba(0,0,0,0.15)";
+      offCtx.lineWidth = satinThicknessX + 1;
+      offCtx.beginPath();
+      offCtx.moveTo(x + 0.5, y + 0.5);
+      offCtx.lineTo(x + dx + 0.5, y + dy + 0.5);
+      offCtx.stroke();
+
+      // Filo colorato
+      offCtx.strokeStyle = `rgb(${r},${g},${b})`;
+      offCtx.lineWidth = satinThicknessX;
+      offCtx.beginPath();
+      offCtx.moveTo(x, y);
+      offCtx.lineTo(x + dx, y + dy);
+      offCtx.stroke();
+
+      // Highlight satin
+      offCtx.strokeStyle = "rgba(255,255,255,0.25)";
+      offCtx.lineWidth = 1;
+      offCtx.beginPath();
+      offCtx.moveTo(x - 0.5, y - 0.5);
+      offCtx.lineTo(x + dx - 0.5, y + dy - 0.5);
+      offCtx.stroke();
     }
   }
 
-  const heightMap = ctx.getImageData(0, 0, w, h);
-
   /* =================================================
-     2️⃣ ALUMINIUM PRESS (REAL 3D)
+     2️⃣ HEIGHT MAP → ALUMINIUM PRESS
      ================================================= */
+  const heightMap = offCtx.getImageData(0, 0, w, h);
   const src = heightMap.data;
   const out = ctx.createImageData(w, h);
 
   const lightX = -0.7;
   const lightY = -0.8;
-  const depth = 7.5;      // PROFONDITÀ SCOLPITA
-  const shine = 1.8;      // LUCENTEZZA FOIL
+  const depth = 8.5;
+  const shine = 1.9;
 
   for (let y = 1; y < h - 1; y++) {
     for (let x = 1; x < w - 1; x++) {
@@ -162,9 +190,9 @@ function applyAluminiumEmboss() {
         (ny/len) * lightY +
         (nz/len);
 
-      let v = 160 + dot * 120;
+      let v = 150 + dot * 130;
       v += Math.pow(Math.max(dot, 0), 5) * 255 * shine;
-      v = Math.max(50, Math.min(255, v));
+      v = Math.max(40, Math.min(255, v));
 
       out.data[i] = out.data[i+1] = out.data[i+2] = v;
       out.data[i+3] = 255;
@@ -176,8 +204,6 @@ function applyAluminiumEmboss() {
   /* =================================================
      3️⃣ METAL FINISH
      ================================================= */
-
-  // riflesso lucido foil
   const gloss = ctx.createLinearGradient(0, 0, w, h);
   gloss.addColorStop(0, "rgba(255,255,255,0.45)");
   gloss.addColorStop(0.35, "rgba(255,255,255,0.08)");
@@ -185,22 +211,6 @@ function applyAluminiumEmboss() {
   gloss.addColorStop(1, "rgba(255,255,255,0.4)");
   ctx.fillStyle = gloss;
   ctx.fillRect(0, 0, w, h);
-
-  // micro-grana alluminio
-  ctx.globalAlpha = 0.2;
-  for (let i = 0; i < 50000; i++) {
-    const x = Math.random() * w;
-    const y = Math.random() * h;
-    const v = 180 + Math.random() * 60;
-    ctx.fillStyle = `rgb(${v},${v},${v})`;
-    ctx.fillRect(x, y, 1, 1);
-  }
-  ctx.globalAlpha = 1;
-
-  // bordo foglio inciso
-  ctx.strokeStyle = "rgba(90,90,90,0.9)";
-  ctx.lineWidth = 6;
-  ctx.strokeRect(3, 3, w - 6, h - 6);
 
   ctx.restore();
 }
