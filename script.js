@@ -246,7 +246,7 @@ function applyEmbroiderySatin() {
 
   const satinSpacing = 5;
   const satinLength = 10;
-  const satinThickness = 3;
+  const satinThickness = 6;
 
   const satinAngle = Math.PI / 6; // 30°
 
