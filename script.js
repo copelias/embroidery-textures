@@ -57,6 +57,10 @@ transformBtn.addEventListener("click", () => {
   applyAluminiumEmboss();
   break; */
 
+  case "draw_outline":
+  applyDrawOutline();
+  break;
+
 
 case "game_block":
   applyGameBlockEffect();
@@ -91,6 +95,69 @@ downloadBtn.addEventListener("click", () => {
 // ================================
 // EFFECT FUNCTIONS
 // ================================
+
+function applyDrawOutline() {
+  const w = canvas.width;
+  const h = canvas.height;
+
+  // Disegna immagine originale
+  ctx.drawImage(img, 0, 0, w, h);
+
+  const imgData = ctx.getImageData(0, 0, w, h);
+  const data = imgData.data;
+
+  // STEP 1 — grayscale
+  const gray = new Uint8ClampedArray(w * h);
+  for (let i = 0; i < data.length; i += 4) {
+    gray[i / 4] =
+      0.299 * data[i] +
+      0.587 * data[i + 1] +
+      0.114 * data[i + 2];
+  }
+
+  // STEP 2 — edge detection (tipo sketch)
+  const threshold = 18; // più basso = più dettagli
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = "white";
+  ctx.fillRect(0, 0, w, h);
+
+  const out = ctx.getImageData(0, 0, w, h);
+  const o = out.data;
+
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const i = y * w + x;
+
+      const gx =
+        -gray[i - w - 1] - 2 * gray[i - 1] - gray[i + w - 1] +
+         gray[i - w + 1] + 2 * gray[i + 1] + gray[i + w + 1];
+
+      const gy =
+        -gray[i - w - 1] - 2 * gray[i - w] - gray[i - w + 1] +
+         gray[i + w - 1] + 2 * gray[i + w] + gray[i + w + 1];
+
+      const mag = Math.sqrt(gx * gx + gy * gy);
+
+      const c = mag > threshold ? 0 : 255;
+      const idx = i * 4;
+
+      o[idx] = c;
+      o[idx + 1] = c;
+      o[idx + 2] = c;
+      o[idx + 3] = 255;
+    }
+  }
+
+  ctx.putImageData(out, 0, 0);
+
+  // STEP 3 — pulizia (linee più nette)
+  ctx.globalCompositeOperation = "multiply";
+  ctx.strokeStyle = "black";
+  ctx.lineWidth = 0.8;
+  ctx.strokeRect(0, 0, w, h);
+  ctx.globalCompositeOperation = "source-over";
+}
+
 
 /* FUNCTION aluminium 
 function applyAluminiumEmboss() {
