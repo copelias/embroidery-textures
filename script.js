@@ -96,46 +96,77 @@ const applyPastel=()=>baseEffect([1.2,1.1,1,30,30,30,8]);
 
 
 function applyCrayon() {
-  const canvas = document.getElementById("canvas");
-  const ctx = canvas.getContext("2d");
+  const w = canvas.width;
+  const h = canvas.height;
 
-  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const data = imgData.data;
+  // Disegno immagine originale
+  ctx.drawImage(img, 0, 0, w, h);
+  const imageData = ctx.getImageData(0, 0, w, h);
+  const data = imageData.data;
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // Sfondo carta
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = "#f6f1e7";
+  ctx.fillRect(0, 0, w, h);
 
-  const strokeLength = 20;
-  const strokeThickness = 12;
-  const density = 3;
+  // PARAMETRI CRAYON (IMPORTANTI)
+  const spacing = 6;            // distanza tra zone
+  const layers = 22;            // quante volte ripassa
+  const strokeLength = 18;      // lunghezza tratto
+  const baseThickness = 6;      // spessore crayon
+  const angle = Math.PI / 4;    // diagonale ↘ fissa
 
-  for (let y = 0; y < canvas.height; y += density) {
-    for (let x = 0; x < canvas.width; x += density) {
+  for (let y = 0; y < h; y += spacing) {
+    for (let x = 0; x < w; x += spacing) {
 
-      const i = (y * canvas.width + x) * 4;
+      const i = (y * w + x) * 4;
       const r = data[i];
       const g = data[i + 1];
       const b = data[i + 2];
       const a = data[i + 3];
+      if (a < 40) continue;
 
-      if (a < 30) continue;
+      // stratificazione (ripassa come un bambino)
+      for (let l = 0; l < layers; l++) {
 
-      ctx.strokeStyle = `rgb(${r},${g},${b})`;
-      ctx.globalAlpha = 0.8 + Math.random() * 0.2;
-      ctx.lineWidth = strokeThickness + Math.random() * 5;
-      ctx.lineCap = "round";
+        const pressure = Math.random() * 0.6 + 0.4;
+        const thickness = baseThickness * pressure;
 
-      ctx.beginPath();
+        const jitterX = (Math.random() - 0.5) * 2;
+        const jitterY = (Math.random() - 0.5) * 2;
 
-      // STESSA DIREZIONE (verticale)
-      const wobble = (Math.random() - 0.5) * 4;
-      ctx.moveTo(x + wobble, y);
-      ctx.lineTo(x + wobble, y + strokeLength);
+        const dx = Math.cos(angle) * strokeLength;
+        const dy = Math.sin(angle) * strokeLength;
 
-      ctx.stroke();
+        // ombra cerosa (rilievo)
+        ctx.strokeStyle = `rgba(0,0,0,0.12)`;
+        ctx.lineWidth = thickness + 2;
+        ctx.beginPath();
+        ctx.moveTo(x + jitterX + 1, y + jitterY + 1);
+        ctx.lineTo(x + dx + jitterX + 1, y + dy + jitterY + 1);
+        ctx.stroke();
+
+        // crayon vero (colore pieno)
+        ctx.strokeStyle = `rgb(${r},${g},${b})`;
+        ctx.lineWidth = thickness;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(x + jitterX, y + jitterY);
+        ctx.lineTo(x + dx + jitterX, y + dy + jitterY);
+        ctx.stroke();
+
+        // riflesso ceroso spezzato
+        if (Math.random() > 0.65) {
+          ctx.strokeStyle = `rgba(255,255,255,0.25)`;
+          ctx.lineWidth = thickness * 0.3;
+          ctx.beginPath();
+          ctx.moveTo(x + jitterX - 1, y + jitterY - 1);
+          ctx.lineTo(x + dx + jitterX - 1, y + dy + jitterY - 1);
+          ctx.stroke();
+        }
+      }
     }
   }
-
-  ctx.globalAlpha = 1;
 }
 
 
