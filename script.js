@@ -98,69 +98,78 @@ function applyAluminiumEmboss() {
   const h = canvas.height;
   ctx.save();
 
-  // disegna immagine base
+  // base
   ctx.drawImage(img, 0, 0, w, h);
+  const src = ctx.getImageData(0, 0, w, h);
+  const dst = ctx.createImageData(w, h);
 
-  // effetto emboss più marcato
-  const imageData = ctx.getImageData(0, 0, w, h);
-  const data = imageData.data;
-  const embossStrength = 2.5; // più scolpito
+  const lightX = -0.6;   // direzione luce
+  const lightY = -0.8;
+  const depth = 4.5;    // profondità incisione
+  const shine = 1.2;    // lucidità alluminio
 
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
       const i = (y * w + x) * 4;
-      const iRight = i + 4 < data.length ? i + 4 : i;
-      const iDown = i + w * 4 < data.length ? i + w * 4 : i;
 
-      const r = data[i], g = data[i + 1], b = data[i + 2];
-      const rDiff = data[iRight] - r + data[iDown] - r;
-      const gDiff = data[iRight + 1] - g + data[iDown + 1] - g;
-      const bDiff = data[iRight + 2] - b + data[iDown + 2] - b;
+      // luminanza pixel vicini (height map)
+      const l = src.data[((y * w + x - 1) * 4)];
+      const r = src.data[((y * w + x + 1) * 4)];
+      const u = src.data[(((y - 1) * w + x) * 4)];
+      const d = src.data[(((y + 1) * w + x) * 4)];
 
-      data[i] = 128 + embossStrength * rDiff;
-      data[i + 1] = 128 + embossStrength * gDiff;
-      data[i + 2] = 128 + embossStrength * bDiff;
+      // normali 3D fake
+      const nx = (l - r) * depth;
+      const ny = (u - d) * depth;
+      const nz = 255;
+
+      // normalizzazione
+      const len = Math.sqrt(nx*nx + ny*ny + nz*nz);
+      const NdotL = (
+        (nx/len) * lightX +
+        (ny/len) * lightY +
+        (nz/len)
+      );
+
+      // luce diffusa + speculare
+      let light = 180 + NdotL * 90;
+      light += Math.pow(Math.max(NdotL, 0), 4) * 255 * shine;
+
+      light = Math.max(80, Math.min(255, light));
+
+      dst.data[i]     = light;
+      dst.data[i + 1] = light;
+      dst.data[i + 2] = light;
+      dst.data[i + 3] = 255;
     }
   }
-  ctx.putImageData(imageData, 0, 0);
 
-  // simuliamo pieghe casuali con gradienti leggeri
-  for (let i = 0; i < 150; i++) {
-    const gx = Math.random() * w;
-    const gy = Math.random() * h;
-    const length = 20 + Math.random() * 50;
-    const angle = Math.random() * Math.PI * 2;
-    const grad = ctx.createLinearGradient(
-      gx, gy,
-      gx + length * Math.cos(angle),
-      gy + length * Math.sin(angle)
-    );
-    const v = 200 + Math.random() * 55;
-    grad.addColorStop(0, `rgba(${v},${v},${v},0.15)`);
-    grad.addColorStop(1, `rgba(${v},${v},${v},0)`);
-    ctx.strokeStyle = grad;
-    ctx.lineWidth = 1 + Math.random() * 2;
-    ctx.beginPath();
-    ctx.moveTo(gx, gy);
-    ctx.lineTo(gx + length * Math.cos(angle), gy + length * Math.sin(angle));
-    ctx.stroke();
-  }
+  ctx.putImageData(dst, 0, 0);
 
-  // grana densa e micro riflessi
-  ctx.globalAlpha = 0.2;
-  for (let i = 0; i < 30000; i++) {
-    const rx = Math.random() * w;
-    const ry = Math.random() * h;
-    const v = 180 + Math.random() * 75;
+  // riflesso direzionale tipo foglio lucido
+  const gloss = ctx.createLinearGradient(0, 0, w, h);
+  gloss.addColorStop(0, "rgba(255,255,255,0.35)");
+  gloss.addColorStop(0.3, "rgba(255,255,255,0.05)");
+  gloss.addColorStop(0.6, "rgba(0,0,0,0.1)");
+  gloss.addColorStop(1, "rgba(255,255,255,0.25)");
+  ctx.fillStyle = gloss;
+  ctx.fillRect(0, 0, w, h);
+
+  // micro graffi metallici
+  ctx.globalAlpha = 0.15;
+  for (let i = 0; i < 40000; i++) {
+    const x = Math.random() * w;
+    const y = Math.random() * h;
+    const v = 190 + Math.random() * 50;
     ctx.fillStyle = `rgb(${v},${v},${v})`;
-    ctx.fillRect(rx, ry, 1, 1);
+    ctx.fillRect(x, y, 1, 1);
   }
   ctx.globalAlpha = 1;
 
-  // bordo più definito
-  ctx.strokeStyle = "rgba(120,120,120,0.9)";
-  ctx.lineWidth = 5;
-  ctx.strokeRect(2, 2, w - 4, h - 4);
+  // bordo foglio inciso
+  ctx.strokeStyle = "rgba(90,90,90,0.9)";
+  ctx.lineWidth = 6;
+  ctx.strokeRect(3, 3, w - 6, h - 6);
 
   ctx.restore();
 }
