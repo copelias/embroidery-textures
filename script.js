@@ -179,19 +179,19 @@ function applyAluminiumEmboss() {
 
 /* FUNCTION game block*/
 function applyGameBlockEffect() {
-  g.save();
+  ctx.save();
 
   const bw = canvas.width;
   const bh = canvas.height;
 
   // Disegna immagine originale
-  g.drawImage(img, 0, 0, bw, bh);
-  const imageData = g.getImageData(0, 0, bw, bh);
+  ctx.drawImage(img, 0, 0, bw, bh);
+  const imageData = ctx.getImageData(0, 0, bw, bh);
   const data = imageData.data;
 
-  g.clearRect(0, 0, bw, bh);
+  ctx.clearRect(0, 0, bw, bh);
 
-  const blockSize = 12; // ↑ più grande = più Minecraft
+  const blockSize = 12; // ↑ più grande = più stile Minecraft
 
   for (let y = 0; y < bh; y += blockSize) {
     for (let x = 0; x < bw; x += blockSize) {
@@ -215,24 +215,23 @@ function applyGameBlockEffect() {
       b = Math.floor(b / count);
 
       // Blocco base
-      g.fillStyle = `rgb(${r},${gCol},${b})`;
-      g.fillRect(x, y, blockSize, blockSize);
+      ctx.fillStyle = `rgb(${r},${gCol},${b})`;
+      ctx.fillRect(x, y, blockSize, blockSize);
 
       // Ombra basso-destra
-      g.fillStyle = "rgba(0,0,0,0.25)";
-      g.fillRect(x, y + blockSize - 2, blockSize, 2);
-      g.fillRect(x + blockSize - 2, y, 2, blockSize);
+      ctx.fillStyle = "rgba(0,0,0,0.25)";
+      ctx.fillRect(x, y + blockSize - 2, blockSize, 2);
+      ctx.fillRect(x + blockSize - 2, y, 2, blockSize);
 
       // Highlight alto-sinistra
-      g.fillStyle = "rgba(255,255,255,0.25)";
-      g.fillRect(x, y, blockSize, 2);
-      g.fillRect(x, y, 2, blockSize);
+      ctx.fillStyle = "rgba(255,255,255,0.25)";
+      ctx.fillRect(x, y, blockSize, 2);
+      ctx.fillRect(x, y, 2, blockSize);
     }
   }
 
-  g.restore();
+  ctx.restore();
 }
-
 
 
 
