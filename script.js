@@ -97,25 +97,22 @@ function applyAluminiumEmboss() {
   const w = canvas.width;
   const h = canvas.height;
 
-  // disegna l'immagine originale
+  ctx.save();
+
+  // disegna immagine
   ctx.drawImage(img, 0, 0, w, h);
 
-  // prendi i dati dei pixel
+  // effetto emboss
   const imageData = ctx.getImageData(0, 0, w, h);
   const data = imageData.data;
-
-  // emboss semplice: effetto rilievo
   const embossStrength = 1.5;
 
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
       const i = (y * w + x) * 4;
-
-      // pixel corrente e pixel a destra e sotto
       const iRight = i + 4 < data.length ? i + 4 : i;
       const iDown = i + w * 4 < data.length ? i + w * 4 : i;
 
-      // calcola differenza per simulare rilievo
       const r = data[i];
       const g = data[i + 1];
       const b = data[i + 2];
@@ -124,41 +121,38 @@ function applyAluminiumEmboss() {
       const gDiff = data[iRight + 1] - g + data[iDown + 1] - g;
       const bDiff = data[iRight + 2] - b + data[iDown + 2] - b;
 
-      // aggiorna pixel con effetto emboss
       data[i] = 128 + embossStrength * rDiff;
       data[i + 1] = 128 + embossStrength * gDiff;
       data[i + 2] = 128 + embossStrength * bDiff;
     }
   }
 
-  // reinserisci i pixel
   ctx.putImageData(imageData, 0, 0);
 
-  // aggiungi un leggero riflesso per simulare metallo
+  // riflesso leggero
   const gradient = ctx.createLinearGradient(0, 0, w, h);
   gradient.addColorStop(0, "rgba(255,255,255,0.05)");
   gradient.addColorStop(1, "rgba(0,0,0,0.05)");
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, w, h);
-}
 
   // grana alluminio
-  g.globalAlpha = 0.18;
+  ctx.globalAlpha = 0.18;
   for (let i = 0; i < 12000; i++) {
     const rx = Math.random() * w;
     const ry = Math.random() * h;
     const v = 180 + Math.random() * 50;
-    g.fillStyle = `rgb(${v},${v},${v})`;
-    g.fillRect(rx, ry, 1, 1);
+    ctx.fillStyle = `rgb(${v},${v},${v})`;
+    ctx.fillRect(rx, ry, 1, 1);
   }
-  g.globalAlpha = 1;
+  ctx.globalAlpha = 1;
 
   // bordo foglio
-  g.strokeStyle = "rgba(120,120,120,0.7)";
-  g.lineWidth = 4;
-  g.strokeRect(2, 2, w - 4, h - 4);
+  ctx.strokeStyle = "rgba(120,120,120,0.7)";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(2, 2, w - 4, h - 4);
 
-  g.restore();
+  ctx.restore();
 }
 
 
