@@ -96,84 +96,46 @@ const applyPastel=()=>baseEffect([1.2,1.1,1,30,30,30,8]);
 
 
 function applyCrayon() {
-  const w = canvas.width;
-  const h = canvas.height;
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
 
-  // Colori originali
-  ctx.drawImage(img, 0, 0, w, h);
-  const src = ctx.getImageData(0, 0, w, h).data;
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imgData.data;
 
-  // Carta
-  ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = "#f7f2e8";
-  ctx.fillRect(0, 0, w, h);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const spacing = 6;
-  const angle = 0; // stessa direzione
-  const dx = Math.cos(angle);
-  const dy = Math.sin(angle);
+  const strokeLength = 20;
+  const strokeThickness = 12;
+  const density = 3;
 
-  for (let y = 0; y < h; y += spacing) {
-    for (let x = 0; x < w; x += spacing) {
+  for (let y = 0; y < canvas.height; y += density) {
+    for (let x = 0; x < canvas.width; x += density) {
 
-      const i = (y * w + x) * 4;
-      const r = src[i];
-      const g = src[i + 1];
-      const b = src[i + 2];
-      const a = src[i + 3];
-      if (a < 50) continue;
+      const i = (y * canvas.width + x) * 4;
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      const a = data[i + 3];
 
-      // più passate = più cera
-      const passes = 4 + Math.floor(Math.random() * 3);
+      if (a < 30) continue;
 
-      for (let p = 0; p < passes; p++) {
-        const len = 18 + Math.random() * 10;
-        const thick = 7 + Math.random() * 4;
+      ctx.strokeStyle = `rgb(${r},${g},${b})`;
+      ctx.globalAlpha = 0.8 + Math.random() * 0.2;
+      ctx.lineWidth = strokeThickness + Math.random() * 5;
+      ctx.lineCap = "round";
 
-        const jx = (Math.random() - 0.5) * 3;
-        const jy = (Math.random() - 0.5) * 3;
+      ctx.beginPath();
 
-        // STRATO SCURO (accumulo)
-        ctx.strokeStyle = `rgb(${r * 0.75},${g * 0.75},${b * 0.75})`;
-        ctx.lineWidth = thick + 2;
-        ctx.lineCap = "round";
-        ctx.beginPath();
-        ctx.moveTo(x + jx, y + jy);
-        ctx.lineTo(x + jx + dx * len, y + jy + dy * len);
-        ctx.stroke();
+      // STESSA DIREZIONE (verticale)
+      const wobble = (Math.random() - 0.5) * 4;
+      ctx.moveTo(x + wobble, y);
+      ctx.lineTo(x + wobble, y + strokeLength);
 
-        // STRATO CENTRALE (pigmento pieno)
-        ctx.strokeStyle = `rgb(${r},${g},${b})`;
-        ctx.lineWidth = thick;
-        ctx.beginPath();
-        ctx.moveTo(x + jx, y + jy);
-        ctx.lineTo(x + jx + dx * len, y + jy + dy * len);
-        ctx.stroke();
-
-        // LUCE CEROSA (3D)
-        ctx.strokeStyle = `rgba(255,255,255,0.35)`;
-        ctx.lineWidth = thick * 0.3;
-        ctx.beginPath();
-        ctx.moveTo(x + jx - 1, y + jy - 1);
-        ctx.lineTo(
-          x + jx + dx * len - 1,
-          y + jy + dy * len - 1
-        );
-        ctx.stroke();
-      }
+      ctx.stroke();
     }
   }
 
-  // Grana cera / carta
-  for (let i = 0; i < w * h * 0.05; i++) {
-    ctx.fillStyle = "rgba(0,0,0,0.03)";
-    ctx.fillRect(
-      Math.random() * w,
-      Math.random() * h,
-      1,
-      1
-    );
-  }
+  ctx.globalAlpha = 1;
 }
 
 
