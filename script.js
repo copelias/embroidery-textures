@@ -94,41 +94,56 @@ downloadBtn.addEventListener("click", () => {
 
 /* FUNCTION aluminium */ 
 function applyAluminiumEmboss() {
-  g.save();
-
   const w = canvas.width;
   const h = canvas.height;
 
-  // Prendi immagine
-  g.drawImage(img, 0, 0, w, h);
-  const imgData = g.getImageData(0, 0, w, h);
-  const d = imgData.data;
+  // disegna l'immagine originale
+  ctx.drawImage(img, 0, 0, w, h);
 
-  g.clearRect(0, 0, w, h);
+  // prendi i dati dei pixel
+  const imageData = ctx.getImageData(0, 0, w, h);
+  const data = imageData.data;
 
-  const step = 2;           // dettaglio
-  const embossStrength = 1.2;
+  // emboss semplice: effetto rilievo
+  const embossStrength = 1.5;
 
-  for (let y = step; y < h - step; y += step) {
-    for (let x = step; x < w - step; x += step) {
-
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
       const i = (y * w + x) * 4;
-      const iL = (y * w + (x - step)) * 4;
-      const iU = ((y - step) * w + x) * 4;
 
-      const lum  = (d[i]  + d[i+1]  + d[i+2])  / 3;
-      const lumL = (d[iL] + d[iL+1] + d[iL+2]) / 3;
-      const lumU = (d[iU] + d[iU+1] + d[iU+2]) / 3;
+      // pixel corrente e pixel a destra e sotto
+      const iRight = i + 4 < data.length ? i + 4 : i;
+      const iDown = i + w * 4 < data.length ? i + w * 4 : i;
 
-      const relief = (lum - lumL + lum - lumU) * embossStrength;
+      // calcola differenza per simulare rilievo
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
 
-      let metal = 200 + relief;
-      metal = Math.max(150, Math.min(240, metal));
+      const rDiff = data[iRight] - r + data[iDown] - r;
+      const gDiff = data[iRight + 1] - g + data[iDown + 1] - g;
+      const bDiff = data[iRight + 2] - b + data[iDown + 2] - b;
 
-      g.fillStyle = `rgb(${metal},${metal},${metal})`;
-      g.fillRect(x, y, step, step);
+      // aggiorna pixel con effetto emboss
+      data[i] = 128 + embossStrength * rDiff;
+      data[i + 1] = 128 + embossStrength * gDiff;
+      data[i + 2] = 128 + embossStrength * bDiff;
     }
   }
+
+  // reinserisci i pixel
+  ctx.putImageData(imageData, 0, 0);
+
+  // aggiungi un leggero riflesso per simulare metallo
+  const gradient = ctx.createLinearGradient(0, 0, w, h);
+  gradient.addColorStop(0, "rgba(255,255,255,0.05)");
+  gradient.addColorStop(1, "rgba(0,0,0,0.05)");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, w, h);
+}
+
+
+
 
   // grana alluminio
   g.globalAlpha = 0.18;
