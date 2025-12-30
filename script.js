@@ -142,9 +142,6 @@ function applyAluminiumEmboss() {
   ctx.fillRect(0, 0, w, h);
 }
 
-
-
-
   // grana alluminio
   g.globalAlpha = 0.18;
   for (let i = 0; i < 12000; i++) {
