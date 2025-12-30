@@ -98,73 +98,110 @@ function applyAluminiumEmboss() {
   const h = canvas.height;
   ctx.save();
 
-  // disegna immagine base
+  /* =========================
+     1️⃣ SATIN = RILIEVO
+     ========================= */
   ctx.drawImage(img, 0, 0, w, h);
+  const src = ctx.getImageData(0, 0, w, h);
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = "#f0f0f0";
+  ctx.fillRect(0, 0, w, h);
 
-  // effetto emboss più marcato
-  const imageData = ctx.getImageData(0, 0, w, h);
-  const data = imageData.data;
-  const embossStrength = 2.5; // più scolpito
+  const spacing = 5;
+  const length = 10;
+  const thickness = 6;
+  const angle = Math.PI / 6;
 
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
+  for (let y = 0; y < h; y += spacing) {
+    for (let x = 0; x < w; x += spacing) {
       const i = (y * w + x) * 4;
-      const iRight = i + 4 < data.length ? i + 4 : i;
-      const iDown = i + w * 4 < data.length ? i + w * 4 : i;
+      if (src.data[i + 3] < 60) continue;
 
-      const r = data[i], g = data[i + 1], b = data[i + 2];
-      const rDiff = data[iRight] - r + data[iDown] - r;
-      const gDiff = data[iRight + 1] - g + data[iDown + 1] - g;
-      const bDiff = data[iRight + 2] - b + data[iDown + 2] - b;
+      const dx = Math.cos(angle) * length;
+      const dy = Math.sin(angle) * length;
 
-      data[i] = 128 + embossStrength * rDiff;
-      data[i + 1] = 128 + embossStrength * gDiff;
-      data[i + 2] = 128 + embossStrength * bDiff;
+      ctx.strokeStyle = `rgb(${src.data[i]},${src.data[i+1]},${src.data[i+2]})`;
+      ctx.lineWidth = thickness;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + dx, y + dy);
+      ctx.stroke();
     }
   }
-  ctx.putImageData(imageData, 0, 0);
 
-  // simuliamo pieghe casuali con gradienti leggeri
-  for (let i = 0; i < 150; i++) {
-    const gx = Math.random() * w;
-    const gy = Math.random() * h;
-    const length = 20 + Math.random() * 50;
-    const angle = Math.random() * Math.PI * 2;
-    const grad = ctx.createLinearGradient(
-      gx, gy,
-      gx + length * Math.cos(angle),
-      gy + length * Math.sin(angle)
-    );
-    const v = 200 + Math.random() * 55;
-    grad.addColorStop(0, `rgba(${v},${v},${v},0.15)`);
-    grad.addColorStop(1, `rgba(${v},${v},${v},0)`);
-    ctx.strokeStyle = grad;
-    ctx.lineWidth = 1 + Math.random() * 2;
-    ctx.beginPath();
-    ctx.moveTo(gx, gy);
-    ctx.lineTo(gx + length * Math.cos(angle), gy + length * Math.sin(angle));
-    ctx.stroke();
+  /* =========================
+     2️⃣ HEIGHT MAP DAL SATIN
+     ========================= */
+  const heightMap = ctx.getImageData(0, 0, w, h);
+  const hData = heightMap.data;
+  const out = ctx.createImageData(w, h);
+
+  const lightX = -0.7;
+  const lightY = -0.8;
+  const depth = 6.5;      // PROFONDITÀ SCOLPITA
+  const shine = 1.6;      // LUCIDITÀ ALLUMINIO
+
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      const i = (y * w + x) * 4;
+
+      const l = hData[(y * w + x - 1) * 4];
+      const r = hData[(y * w + x + 1) * 4];
+      const u = hData[((y - 1) * w + x) * 4];
+      const d = hData[((y + 1) * w + x) * 4];
+
+      const nx = (l - r) * depth;
+      const ny = (u - d) * depth;
+      const nz = 255;
+
+      const len = Math.sqrt(nx*nx + ny*ny + nz*nz);
+      const dot =
+        (nx/len) * lightX +
+        (ny/len) * lightY +
+        (nz/len);
+
+      let v = 170 + dot * 110;
+      v += Math.pow(Math.max(dot, 0), 5) * 255 * shine;
+      v = Math.max(60, Math.min(255, v));
+
+      out.data[i] = out.data[i+1] = out.data[i+2] = v;
+      out.data[i+3] = 255;
+    }
   }
 
-  // grana densa e micro riflessi
-  ctx.globalAlpha = 0.2;
-  for (let i = 0; i < 30000; i++) {
-    const rx = Math.random() * w;
-    const ry = Math.random() * h;
-    const v = 180 + Math.random() * 75;
+  ctx.putImageData(out, 0, 0);
+
+  /* =========================
+     3️⃣ METAL LOOK
+     ========================= */
+
+  // riflesso foglio
+  const gloss = ctx.createLinearGradient(0, 0, w, h);
+  gloss.addColorStop(0, "rgba(255,255,255,0.45)");
+  gloss.addColorStop(0.35, "rgba(255,255,255,0.08)");
+  gloss.addColorStop(0.6, "rgba(0,0,0,0.15)");
+  gloss.addColorStop(1, "rgba(255,255,255,0.35)");
+  ctx.fillStyle = gloss;
+  ctx.fillRect(0, 0, w, h);
+
+  // micro graffi
+  ctx.globalAlpha = 0.18;
+  for (let i = 0; i < 45000; i++) {
+    const x = Math.random() * w;
+    const y = Math.random() * h;
+    const v = 180 + Math.random() * 60;
     ctx.fillStyle = `rgb(${v},${v},${v})`;
-    ctx.fillRect(rx, ry, 1, 1);
+    ctx.fillRect(x, y, 1, 1);
   }
   ctx.globalAlpha = 1;
 
-  // bordo più definito
-  ctx.strokeStyle = "rgba(120,120,120,0.9)";
-  ctx.lineWidth = 5;
-  ctx.strokeRect(2, 2, w - 4, h - 4);
+  // bordo foglio inciso
+  ctx.strokeStyle = "rgba(90,90,90,0.9)";
+  ctx.lineWidth = 6;
+  ctx.strokeRect(3, 3, w - 6, h - 6);
 
   ctx.restore();
 }
-
 
 
 
