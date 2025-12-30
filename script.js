@@ -99,61 +99,57 @@ function applyCrayon() {
   const w = canvas.width;
   const h = canvas.height;
 
-  // immagine di riferimento (NON la ridisegniamo pixel per pixel)
+  // immagine di riferimento
   ctx.drawImage(img, 0, 0, w, h);
   const ref = ctx.getImageData(0, 0, w, h);
+  const d = ref.data;
 
   // carta
   ctx.clearRect(0, 0, w, h);
   ctx.fillStyle = "#f7f2e8";
   ctx.fillRect(0, 0, w, h);
 
-  const angle = Math.PI / 4; // diagonale
-  const spacing = 18;       // distanza tra tratti (LARGA)
-  const strokeLen = w * 1.3;
-  const layers = 5;         // ripassi
+  const angle = Math.PI / 4; // diagonale bambino
+  const spacing = 10;       // distanza tra tratti
+  const strokeLen = 22;     // tratto CORTO
+  const passes = 3;         // ripassi disordinati
 
-  ctx.globalAlpha = 0.85;
+  ctx.lineCap = "round";
 
-  for (let y = -h; y < h * 2; y += spacing) {
-    for (let l = 0; l < layers; l++) {
+  for (let p = 0; p < passes; p++) {
+    for (let y = 0; y < h; y += spacing) {
+      for (let x = 0; x < w; x += spacing) {
 
-      const jitter = (Math.random() - 0.5) * 6;
-      const sampleY = Math.min(h - 1, Math.max(0, Math.floor(y + h / 2)));
+        const i = (y * w + x) * 4;
+        const r = d[i];
+        const g = d[i + 1];
+        const b = d[i + 2];
+        const a = d[i + 3];
 
-      // campione colore AMPIO (non pixel singolo)
-      let r = 0, g = 0, b = 0, c = 0;
-      for (let x = 0; x < w; x += 20) {
-        const i = (sampleY * w + x) * 4;
-        r += ref.data[i];
-        g += ref.data[i + 1];
-        b += ref.data[i + 2];
-        c++;
+        if (a < 40) continue;
+
+        // variazione bambino
+        const jitterX = (Math.random() - 0.5) * 6;
+        const jitterY = (Math.random() - 0.5) * 6;
+        const pressure = 0.5 + Math.random() * 0.5;
+
+        const dx = Math.cos(angle) * strokeLen;
+        const dy = Math.sin(angle) * strokeLen;
+
+        ctx.strokeStyle = `rgb(${r},${g},${b})`;
+        ctx.lineWidth = 10 + Math.random() * 6;
+        ctx.globalAlpha = pressure;
+
+        ctx.beginPath();
+        ctx.moveTo(x + jitterX, y + jitterY);
+        ctx.lineTo(x + dx + jitterX, y + dy + jitterY);
+        ctx.stroke();
       }
-      if (!c) continue;
-
-      r = Math.round(r / c);
-      g = Math.round(g / c);
-      b = Math.round(b / c);
-
-      const dx = Math.cos(angle) * strokeLen;
-      const dy = Math.sin(angle) * strokeLen;
-
-      // MATITA COLORATA (spessa, morbida)
-      ctx.strokeStyle = `rgb(${r},${g},${b})`;
-      ctx.lineWidth = 14 + Math.random() * 4;
-      ctx.lineCap = "round";
-
-      ctx.beginPath();
-      ctx.moveTo(-w, y + jitter);
-      ctx.lineTo(dx - w, y + dy + jitter);
-      ctx.stroke();
     }
   }
 
   ctx.globalAlpha = 1;
 }
-
 
 
 
