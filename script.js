@@ -53,9 +53,9 @@ transformBtn.addEventListener("click", () => {
 
   switch (effect) {
     
-case "aluminium_emboss":
+/* case "aluminium_emboss":
   applyAluminiumEmboss();
-  break;
+  break; */
 
 
 case "game_block":
@@ -92,15 +92,15 @@ downloadBtn.addEventListener("click", () => {
 // EFFECT FUNCTIONS
 // ================================
 
-/* FUNCTION aluminium */ 
+/* FUNCTION aluminium 
 function applyAluminiumEmboss() {
   const w = canvas.width;
   const h = canvas.height;
   ctx.save();
 
-  /* =================================================
+   =================================================
      1️⃣ OFFSCREEN CANVAS → EMBROIDERY SATIN ORIGINALE
-     ================================================= */
+     ================================================= 
   const off = document.createElement("canvas");
   off.width = w;
   off.height = h;
@@ -159,9 +159,9 @@ function applyAluminiumEmboss() {
     }
   }
 
-  /* =================================================
+   =================================================
      2️⃣ HEIGHT MAP → ALUMINIUM PRESS
-     ================================================= */
+     ================================================= 
   const heightMap = offCtx.getImageData(0, 0, w, h);
   const src = heightMap.data;
   const out = ctx.createImageData(w, h);
@@ -201,9 +201,9 @@ function applyAluminiumEmboss() {
 
   ctx.putImageData(out, 0, 0);
 
-  /* =================================================
+   =================================================
      3️⃣ METAL FINISH
-     ================================================= */
+     ================================================= 
   const gloss = ctx.createLinearGradient(0, 0, w, h);
   gloss.addColorStop(0, "rgba(255,255,255,0.45)");
   gloss.addColorStop(0.35, "rgba(255,255,255,0.08)");
@@ -214,7 +214,7 @@ function applyAluminiumEmboss() {
 
   ctx.restore();
 }
-
+*/
 
 
 
