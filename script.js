@@ -61,8 +61,8 @@ case "pastel": applyPastel(); break;
 
 case "crayon": applyCrayon(); break;
 
-    case "embroiderySatin":
-  applyEmbroiderySatin();
+    case "Towel":
+  applyTowel();
   break;
 
   }
@@ -159,7 +159,7 @@ function applyCrayon() {
 // ================================
 // EMBROIDERY PATCH SATIN EFFECT
 // ================================
-function applyEmbroiderySatin() {
+function applyTowel() {
   const w = canvas.width;
   const h = canvas.height;
 
