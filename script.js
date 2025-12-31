@@ -57,9 +57,10 @@ transformBtn.addEventListener("click", () => {
   applyAluminiumEmboss();
   break; */
 
-  case "draw_outline":
-  applyDrawOutline();
-  break;
+  case "colored_pencil":
+    applyColoredPencil();
+    break;
+
 
   case "clean_line_art":
   applyCleanLineArt();
@@ -100,66 +101,76 @@ downloadBtn.addEventListener("click", () => {
 // EFFECT FUNCTIONS
 // ================================
 
-function applyDrawOutline() {
-  const w = canvas.width;
-  const h = canvas.height;
+function applyColoredPencil() {
+    const w = canvas.width;
+    const h = canvas.height;
 
-  // Disegna immagine originale
-  ctx.drawImage(img, 0, 0, w, h);
+    // Base: disegna immagine originale
+    ctx.drawImage(img, 0, 0, w, h);
 
-  const imgData = ctx.getImageData(0, 0, w, h);
-  const data = imgData.data;
+    // Ottieni dati pixel
+    const src = ctx.getImageData(0, 0, w, h);
+    const s = src.data;
 
-  // STEP 1 — grayscale
-  const gray = new Uint8ClampedArray(w * h);
-  for (let i = 0; i < data.length; i += 4) {
-    gray[i / 4] =
-      0.299 * data[i] +
-      0.587 * data[i + 1] +
-      0.114 * data[i + 2];
-  }
-
-  // STEP 2 — edge detection (tipo sketch)
-  const threshold = 18; // più basso = più dettagli
-  ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = "white";
-  ctx.fillRect(0, 0, w, h);
-
-  const out = ctx.getImageData(0, 0, w, h);
-  const o = out.data;
-
-  for (let y = 1; y < h - 1; y++) {
-    for (let x = 1; x < w - 1; x++) {
-      const i = y * w + x;
-
-      const gx =
-        -gray[i - w - 1] - 2 * gray[i - 1] - gray[i + w - 1] +
-         gray[i - w + 1] + 2 * gray[i + 1] + gray[i + w + 1];
-
-      const gy =
-        -gray[i - w - 1] - 2 * gray[i - w] - gray[i - w + 1] +
-         gray[i + w - 1] + 2 * gray[i + w] + gray[i + w + 1];
-
-      const mag = Math.sqrt(gx * gx + gy * gy);
-
-      const c = mag > threshold ? 0 : 255;
-      const idx = i * 4;
-
-      o[idx] = c;
-      o[idx + 1] = c;
-      o[idx + 2] = c;
-      o[idx + 3] = 255;
+    // Converti in grayscale per rilevamento bordi
+    const gray = new Uint8ClampedArray(w * h);
+    for (let i = 0; i < s.length; i += 4) {
+        gray[i / 4] = 0.299 * s[i] + 0.587 * s[i + 1] + 0.114 * s[i + 2];
     }
-  }
 
-  ctx.putImageData(out, 0, 0);
+    // Svuota canvas con sfondo bianco
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, w, h);
 
-  // STEP 3 — pulizia (linee più nette)
-  ctx.globalCompositeOperation = "multiply";
-  ctx.strokeStyle = "black";
-  ctx.lineWidth = 0.8;
-  ctx.strokeRect(0, 0, w, h);
-  ctx.globalCompositeOperation = "source-over";
+    // Rilevamento bordi
+    const out = ctx.getImageData(0, 0, w, h);
+    const o = out.data;
+    const threshold = 40; // solo bordi principali, regola per meno linee
+    for (let y = 1; y < h - 1; y++) {
+        for (let x = 1; x < w - 1; x++) {
+            const i = y * w + x;
+            const d = Math.abs(gray[i] - gray[i - 1]) + Math.abs(gray[i] - gray[i + 1]) +
+                      Math.abs(gray[i] - gray[i - w]) + Math.abs(gray[i] - gray[i + w]);
+            if (d > threshold) {
+                const idx = i * 4;
+                // Colori leggeri per matita colorata
+                const colors = [
+                    [200, 50, 50],    // rosso
+                    [50, 150, 50],    // verde
+                    [50, 50, 200],    // blu
+                    [200, 150, 50],   // arancio
+                    [150, 50, 200]    // viola
+                ];
+                const col = colors[Math.floor(Math.random() * colors.length)];
+                o[idx] = col[0];
+                o[idx + 1] = col[1];
+                o[idx + 2] = col[2];
+                o[idx + 3] = 255;
+            } else {
+                const idx = i * 4;
+                o[idx] = 255;
+                o[idx + 1] = 255;
+                o[idx + 2] = 255;
+                o[idx + 3] = 255;
+            }
+        }
+    }
+
+    ctx.putImageData(out, 0, 0);
+
+    // Texture delicata per matita (simula tratto)
+    ctx.globalAlpha = 0.08;
+    for (let i = 0; i < w * h * 0.03; i++) { // 3% punti random
+        const rx = Math.random() * w;
+        const ry = Math.random() * h;
+        const radius = Math.random() * 1.2;
+        ctx.fillStyle = `rgba(${50 + Math.random() * 205},${50 + Math.random() * 205},${50 + Math.random() * 205},0.3)`;
+        ctx.beginPath();
+        ctx.arc(rx, ry, radius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1;
 }
 
 
