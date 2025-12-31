@@ -169,12 +169,12 @@ function applyCleanLineArt() {
   const w = canvas.width;
   const h = canvas.height;
 
-  // Base
+  // Disegna immagine base
   ctx.drawImage(img, 0, 0, w, h);
   const src = ctx.getImageData(0, 0, w, h);
   const s = src.data;
 
-  // Grayscale + blur leggero (per stabilizzare)
+  // Grayscale pulito (NO blur artistico)
   const gray = new Uint8ClampedArray(w * h);
   for (let i = 0; i < s.length; i += 4) {
     gray[i / 4] =
@@ -183,6 +183,7 @@ function applyCleanLineArt() {
       0.114 * s[i + 2];
   }
 
+  // Fondo bianco assoluto
   ctx.clearRect(0, 0, w, h);
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, w, h);
@@ -190,22 +191,25 @@ function applyCleanLineArt() {
   const out = ctx.getImageData(0, 0, w, h);
   const o = out.data;
 
-  const threshold = 32; // SOLO bordi forti
+  // Threshold ALTO = pochissime linee
+  const threshold = 50;
 
   for (let y = 1; y < h - 1; y++) {
     for (let x = 1; x < w - 1; x++) {
       const i = y * w + x;
 
+      // Edge detection secco (decisione netta)
       const d =
         Math.abs(gray[i] - gray[i - 1]) +
         Math.abs(gray[i] - gray[i + 1]) +
         Math.abs(gray[i] - gray[i - w]) +
         Math.abs(gray[i] - gray[i + w]);
 
-      const v = d > threshold ? 0 : 255;
-      const idx = i * 4;
+      const isEdge = d > threshold;
+      const v = isEdge ? 0 : 255;
 
-      o[idx] = v;
+      const idx = i * 4;
+      o[idx]     = v;
       o[idx + 1] = v;
       o[idx + 2] = v;
       o[idx + 3] = 255;
@@ -214,11 +218,13 @@ function applyCleanLineArt() {
 
   ctx.putImageData(out, 0, 0);
 
-  // Ripasso uniforme (simula linea tecnica)
+  // ❗ NIENTE ripasso spesso
+  // Linea sottile = pixel-level (computer drawing)
   ctx.strokeStyle = "#000";
-  ctx.lineWidth = 1.4;
+  ctx.lineWidth = 1;
   ctx.strokeRect(0, 0, w, h);
 }
+
 
 
 /* FUNCTION aluminium 
