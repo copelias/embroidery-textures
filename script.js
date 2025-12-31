@@ -105,22 +105,16 @@ function applyColoredPencil() {
     const w = canvas.width;
     const h = canvas.height;
 
-    // Base: disegna immagine originale
+    // Ottieni pixel originali senza cancellare
     ctx.drawImage(img, 0, 0, w, h);
-
-    // Ottieni dati pixel originali
     const src = ctx.getImageData(0, 0, w, h);
     const s = src.data;
 
-    // Pulisce canvas con sfondo bianco
+    // Pulisci il canvas, ma usiamo solo per base trasparente
     ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, w, h);
 
-    // Imposta trasparenza per sovrapposizione simile a matita
-    ctx.globalAlpha = 0.25;
-
-    const step = 2; // distanza tra i tratti, più piccolo = più dettagli
+    ctx.globalAlpha = 0.25; // trasparenza dei tratti
+    const step = 2;
     for (let y = 0; y < h; y += step) {
         for (let x = 0; x < w; x += step) {
             const i = (y * w + x) * 4;
@@ -128,7 +122,6 @@ function applyColoredPencil() {
             const g = s[i + 1];
             const b = s[i + 2];
 
-            // leggero offset casuale per simulare tratto matita
             const offsetX = x + (Math.random() - 0.5) * 1.2;
             const offsetY = y + (Math.random() - 0.5) * 1.2;
 
@@ -141,26 +134,22 @@ function applyColoredPencil() {
             ctx.stroke();
         }
     }
-
     ctx.globalAlpha = 1;
 
-    // Texture finale delicata per simulare tatto della matita
+    // Texture finale
     ctx.globalAlpha = 0.08;
-    for (let i = 0; i < w * h * 0.02; i++) { // 2% punti random
+    for (let i = 0; i < w * h * 0.02; i++) {
         const rx = Math.random() * w;
         const ry = Math.random() * h;
-        const radius = Math.random() * 1.0;
+        const idx = (Math.floor(ry) * w + Math.floor(rx)) * 4;
 
-        const idx = Math.floor(ry) * w + Math.floor(rx);
-        const ri = idx * 4;
-
-        const colR = s[ri];
-        const colG = s[ri + 1];
-        const colB = s[ri + 2];
+        const colR = s[idx];
+        const colG = s[idx + 1];
+        const colB = s[idx + 2];
 
         ctx.fillStyle = `rgba(${colR},${colG},${colB},0.3)`;
         ctx.beginPath();
-        ctx.arc(rx, ry, radius, 0, Math.PI * 2);
+        ctx.arc(rx, ry, Math.random() * 1.0, 0, Math.PI * 2);
         ctx.fill();
     }
     ctx.globalAlpha = 1;
