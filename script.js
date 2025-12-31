@@ -105,15 +105,14 @@ function applyColoredPencil() {
     const w = canvas.width;
     const h = canvas.height;
 
-    // Ottieni pixel originali senza cancellare
+    // Ottieni pixel originali
     ctx.drawImage(img, 0, 0, w, h);
     const src = ctx.getImageData(0, 0, w, h);
     const s = src.data;
 
-    // Pulisci il canvas, ma usiamo solo per base trasparente
-    ctx.clearRect(0, 0, w, h);
+    // NON cancelliamo il canvas, nessun fillRect
 
-    ctx.globalAlpha = 0.25; // trasparenza dei tratti
+    // Tratti principali a matita colorata
     const step = 2;
     for (let y = 0; y < h; y += step) {
         for (let x = 0; x < w; x += step) {
@@ -122,6 +121,7 @@ function applyColoredPencil() {
             const g = s[i + 1];
             const b = s[i + 2];
 
+            // Offset leggero casuale per tatto matita
             const offsetX = x + (Math.random() - 0.5) * 1.2;
             const offsetY = y + (Math.random() - 0.5) * 1.2;
 
@@ -134,9 +134,8 @@ function applyColoredPencil() {
             ctx.stroke();
         }
     }
-    ctx.globalAlpha = 1;
 
-    // Texture finale
+    // Micro-texture per tatto della matita, trasparenza bassa
     ctx.globalAlpha = 0.08;
     for (let i = 0; i < w * h * 0.02; i++) {
         const rx = Math.random() * w;
@@ -154,7 +153,6 @@ function applyColoredPencil() {
     }
     ctx.globalAlpha = 1;
 }
-
 
 
 function applyCleanLineArt() {
