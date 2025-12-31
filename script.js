@@ -108,71 +108,63 @@ function applyColoredPencil() {
     // Base: disegna immagine originale
     ctx.drawImage(img, 0, 0, w, h);
 
-    // Ottieni dati pixel
+    // Ottieni dati pixel originali
     const src = ctx.getImageData(0, 0, w, h);
     const s = src.data;
 
-    // Converti in grayscale per rilevamento bordi
-    const gray = new Uint8ClampedArray(w * h);
-    for (let i = 0; i < s.length; i += 4) {
-        gray[i / 4] = 0.299 * s[i] + 0.587 * s[i + 1] + 0.114 * s[i + 2];
-    }
-
-    // Svuota canvas con sfondo bianco
+    // Pulisce canvas con sfondo bianco
     ctx.clearRect(0, 0, w, h);
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, w, h);
 
-    // Rilevamento bordi
-    const out = ctx.getImageData(0, 0, w, h);
-    const o = out.data;
-    const threshold = 40; // solo bordi principali, regola per meno linee
-    for (let y = 1; y < h - 1; y++) {
-        for (let x = 1; x < w - 1; x++) {
-            const i = y * w + x;
-            const d = Math.abs(gray[i] - gray[i - 1]) + Math.abs(gray[i] - gray[i + 1]) +
-                      Math.abs(gray[i] - gray[i - w]) + Math.abs(gray[i] - gray[i + w]);
-            if (d > threshold) {
-                const idx = i * 4;
-                // Colori leggeri per matita colorata
-                const colors = [
-                    [200, 50, 50],    // rosso
-                    [50, 150, 50],    // verde
-                    [50, 50, 200],    // blu
-                    [200, 150, 50],   // arancio
-                    [150, 50, 200]    // viola
-                ];
-                const col = colors[Math.floor(Math.random() * colors.length)];
-                o[idx] = col[0];
-                o[idx + 1] = col[1];
-                o[idx + 2] = col[2];
-                o[idx + 3] = 255;
-            } else {
-                const idx = i * 4;
-                o[idx] = 255;
-                o[idx + 1] = 255;
-                o[idx + 2] = 255;
-                o[idx + 3] = 255;
-            }
+    // Imposta trasparenza per sovrapposizione simile a matita
+    ctx.globalAlpha = 0.25;
+
+    const step = 2; // distanza tra i tratti, più piccolo = più dettagli
+    for (let y = 0; y < h; y += step) {
+        for (let x = 0; x < w; x += step) {
+            const i = (y * w + x) * 4;
+            const r = s[i];
+            const g = s[i + 1];
+            const b = s[i + 2];
+
+            // leggero offset casuale per simulare tratto matita
+            const offsetX = x + (Math.random() - 0.5) * 1.2;
+            const offsetY = y + (Math.random() - 0.5) * 1.2;
+
+            ctx.strokeStyle = `rgb(${r},${g},${b})`;
+            ctx.lineWidth = 1.2;
+
+            ctx.beginPath();
+            ctx.moveTo(offsetX, offsetY);
+            ctx.lineTo(offsetX + Math.random() * 1.5, offsetY + Math.random() * 1.5);
+            ctx.stroke();
         }
     }
 
-    ctx.putImageData(out, 0, 0);
+    ctx.globalAlpha = 1;
 
-    // Texture delicata per matita (simula tratto)
+    // Texture finale delicata per simulare tatto della matita
     ctx.globalAlpha = 0.08;
-    for (let i = 0; i < w * h * 0.03; i++) { // 3% punti random
+    for (let i = 0; i < w * h * 0.02; i++) { // 2% punti random
         const rx = Math.random() * w;
         const ry = Math.random() * h;
-        const radius = Math.random() * 1.2;
-        ctx.fillStyle = `rgba(${50 + Math.random() * 205},${50 + Math.random() * 205},${50 + Math.random() * 205},0.3)`;
+        const radius = Math.random() * 1.0;
+
+        const idx = Math.floor(ry) * w + Math.floor(rx);
+        const ri = idx * 4;
+
+        const colR = s[ri];
+        const colG = s[ri + 1];
+        const colB = s[ri + 2];
+
+        ctx.fillStyle = `rgba(${colR},${colG},${colB},0.3)`;
         ctx.beginPath();
         ctx.arc(rx, ry, radius, 0, Math.PI * 2);
         ctx.fill();
     }
     ctx.globalAlpha = 1;
 }
-
 
 
 
