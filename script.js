@@ -105,7 +105,7 @@ function applyColoredPencil() {
     const w = canvas.width;
     const h = canvas.height;
 
-    // Disegna SOLO per leggere i pixel
+    // Legge l'immagine SOLO come riferimento
     ctx.drawImage(img, 0, 0, w, h);
     const src = ctx.getImageData(0, 0, w, h);
     const s = src.data;
@@ -113,57 +113,84 @@ function applyColoredPencil() {
     // PULIZIA TOTALE
     ctx.clearRect(0, 0, w, h);
 
-    // Carta (non bianco puro)
-    ctx.fillStyle = "#fdfdfb";
+    // Carta leggermente calda
+    ctx.fillStyle = "#fcfcf8";
     ctx.fillRect(0, 0, w, h);
 
-    // PARAMETRI MATITA
-    const step = 2.5;          // densità tratto
-    const maxLen = 3.5;        // lunghezza tratto
-    const minLen = 1.2;
-    const lineW = 0.9;         // spessore linea
-
     ctx.lineCap = "round";
+    ctx.lineJoin = "round";
 
-    // RICOSTRUZIONE A TRATTI
-    for (let y = 0; y < h; y += step) {
-        for (let x = 0; x < w; x += step) {
-            const px = Math.floor(x);
-            const py = Math.floor(y);
-            const i = (py * w + px) * 4;
+    // PARAMETRI PASTELLO
+    const step = 3;
+    const layers = 4;              // STRATIFICAZIONE
+    const baseWidth = 1.4;
+    const maxLen = 6;
 
-            const r = s[i];
-            const g = s[i + 1];
-            const b = s[i + 2];
+    // Direzioni incrociate (come mano vera)
+    const directions = [
+        0,
+        Math.PI / 4,
+        Math.PI / 2,
+        (3 * Math.PI) / 4
+    ];
 
-            const brightness = (r + g + b) / 3;
-            if (brightness > 245) continue; // lascia bianchi veri
+    // STRATI
+    for (let l = 0; l < layers; l++) {
+        ctx.globalAlpha = 0.18 + l * 0.08;
 
-            // Tratto leggermente casuale ma controllato
-            const angle = Math.random() * Math.PI;
-            const len = minLen + Math.random() * maxLen;
+        for (let y = 0; y < h; y += step) {
+            for (let x = 0; x < w; x += step) {
+                const px = Math.floor(x);
+                const py = Math.floor(y);
+                const i = (py * w + px) * 4;
 
-            ctx.strokeStyle = `rgb(${r},${g},${b})`;
-            ctx.lineWidth = lineW;
+                const r = s[i];
+                const g = s[i + 1];
+                const b = s[i + 2];
 
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(
-                x + Math.cos(angle) * len,
-                y + Math.sin(angle) * len
-            );
-            ctx.stroke();
+                const brightness = (r + g + b) / 3;
+                if (brightness > 248) continue;
+
+                const angle =
+                    directions[Math.floor(Math.random() * directions.length)] +
+                    (Math.random() - 0.5) * 0.4;
+
+                const len = 2 + Math.random() * maxLen;
+
+                ctx.strokeStyle = `rgb(${r},${g},${b})`;
+                ctx.lineWidth = baseWidth + Math.random() * 0.6;
+
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(
+                    x + Math.cos(angle) * len,
+                    y + Math.sin(angle) * len
+                );
+                ctx.stroke();
+            }
         }
     }
 
-    // TEXTURE CARTA + GRAFITE
-    ctx.globalAlpha = 0.06;
-    ctx.fillStyle = "rgba(0,0,0,0.15)";
-    for (let i = 0; i < w * h * 0.015; i++) {
+    // FUSIONE CRAYON / OLIO
+    ctx.globalAlpha = 0.08;
+    for (let i = 0; i < w * h * 0.03; i++) {
         const rx = Math.random() * w;
         const ry = Math.random() * h;
-        ctx.fillRect(rx, ry, 0.7, 0.7);
+        ctx.fillStyle = `rgba(0,0,0,0.25)`;
+        ctx.fillRect(rx, ry, 1.2, 1.2);
     }
+
+    // Micro sbavature pastello
+    ctx.globalAlpha = 0.05;
+    for (let i = 0; i < w * h * 0.02; i++) {
+        const rx = Math.random() * w;
+        const ry = Math.random() * h;
+        ctx.beginPath();
+        ctx.arc(rx, ry, Math.random() * 1.6, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0,0,0,0.2)";
+        ctx.fill();
+    }
+
     ctx.globalAlpha = 1;
 }
 
