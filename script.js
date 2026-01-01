@@ -105,7 +105,7 @@ function applyColoredPencil() {
     const w = canvas.width;
     const h = canvas.height;
 
-    // Legge l'immagine solo come riferimento colore
+    // Usa l'immagine SOLO come riferimento colore
     ctx.drawImage(img, 0, 0, w, h);
     const src = ctx.getImageData(0, 0, w, h);
     const s = src.data;
@@ -113,56 +113,63 @@ function applyColoredPencil() {
     // PULIZIA TOTALE
     ctx.clearRect(0, 0, w, h);
 
-    // Sfondo tipo carta scura (come Canva)
-    ctx.fillStyle = "#1e1e1e";
+    // Sfondo carta chiara
+    ctx.fillStyle = "#f6f3ee";
     ctx.fillRect(0, 0, w, h);
 
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
+    const step = 6;          // dimensione pennellata
+    const layers = 3;        // stratificazione colore
+    const maxRadius = 7;     // grandezza macchia
 
-    const step = 6;          // densità
-    const strokes = 14;     // quante linee per punto
-    const maxLen = 14;
+    for (let l = 0; l < layers; l++) {
+        ctx.globalAlpha = 0.18 + l * 0.12;
 
-    for (let y = 0; y < h; y += step) {
-        for (let x = 0; x < w; x += step) {
-            const i = (y * w + x) * 4;
+        for (let y = 0; y < h; y += step) {
+            for (let x = 0; x < w; x += step) {
 
-            const r = s[i];
-            const g = s[i + 1];
-            const b = s[i + 2];
-            const a = s[i + 3];
+                const i = (y * w + x) * 4;
+                const r = s[i];
+                const g = s[i + 1];
+                const b = s[i + 2];
+                const a = s[i + 3];
 
-            if (a < 80) continue;
+                if (a < 60) continue;
 
-            // evita bianchi
-            if (r + g + b > 720) continue;
+                // evita bianchi forti
+                if (r + g + b > 735) continue;
 
-            ctx.strokeStyle = `rgb(${r},${g},${b})`;
+                const radius = 3 + Math.random() * maxRadius;
 
-            for (let k = 0; k < strokes; k++) {
-                const angle = Math.random() * Math.PI * 2;
-                const len = 4 + Math.random() * maxLen;
-
-                ctx.lineWidth = 1.2 + Math.random() * 0.8;
-                ctx.globalAlpha = 0.8;
+                ctx.fillStyle = `rgb(${r},${g},${b})`;
 
                 ctx.beginPath();
-                ctx.moveTo(
-                    x + Math.random() * 3,
-                    y + Math.random() * 3
+                ctx.ellipse(
+                    x + Math.random() * 2,
+                    y + Math.random() * 2,
+                    radius,
+                    radius * (0.7 + Math.random() * 0.6),
+                    Math.random() * Math.PI,
+                    0,
+                    Math.PI * 2
                 );
-                ctx.lineTo(
-                    x + Math.cos(angle) * len,
-                    y + Math.sin(angle) * len
-                );
-                ctx.stroke();
+                ctx.fill();
             }
         }
     }
 
     ctx.globalAlpha = 1;
+
+    // Texture carta (molto leggera)
+    ctx.globalAlpha = 0.07;
+    for (let i = 0; i < w * h * 0.02; i++) {
+        const rx = Math.random() * w;
+        const ry = Math.random() * h;
+        ctx.fillStyle = "rgba(0,0,0,0.12)";
+        ctx.fillRect(rx, ry, 1, 1);
+    }
+    ctx.globalAlpha = 1;
 }
+
 
 
 
