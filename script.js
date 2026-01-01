@@ -67,6 +67,11 @@ transformBtn.addEventListener("click", () => {
     break;
 
 
+  case "cotton":
+    applyCotton();
+    break;
+
+
   case "clean_line_art":
   applyCleanLineArt();
   break;
@@ -238,6 +243,77 @@ function applyColoredPencil() {
     }
     ctx.globalAlpha = 1;
 }
+
+
+
+
+function applyCotton() {
+    const w = canvas.width;
+    const h = canvas.height;
+
+    // Disegna immagine originale
+    ctx.drawImage(img, 0, 0, w, h);
+
+    // Prendi dati pixel
+    const src = ctx.getImageData(0, 0, w, h);
+    const s = src.data;
+
+    // Svuota canvas con bianco morbido
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, w, h);
+
+    // Parametri cotton
+    const softness = 6;    // quanto sfumare i colori
+    const fluffDensity = 0.03; // percentuale di punti casuali
+
+    // Sfuma i pixel creando effetto morbido
+    for (let y = 0; y < h; y += 1) {
+        for (let x = 0; x < w; x += 1) {
+            const i = (y * w + x) * 4;
+            
+            // Calcolo colore sfumato mischiando pixel vicini
+            const nx = Math.min(x + Math.floor(Math.random() * softness), w - 1);
+            const ny = Math.min(y + Math.floor(Math.random() * softness), h - 1);
+            const ni = (ny * w + nx) * 4;
+
+            const r = (s[i] + s[ni]) / 2;
+            const g = (s[i + 1] + s[ni + 1]) / 2;
+            const b = (s[i + 2] + s[ni + 2]) / 2;
+            const a = s[i + 3];
+
+            s[i] = r;
+            s[i + 1] = g;
+            s[i + 2] = b;
+            s[i + 3] = a;
+        }
+    }
+
+    // Metti i dati modificati sul canvas
+    ctx.putImageData(src, 0, 0);
+
+    // Aggiungi puntini morbidi tipo fiocchi di cotone
+    ctx.globalAlpha = 0.08;
+    const totalFluff = Math.floor(w * h * fluffDensity);
+    for (let i = 0; i < totalFluff; i++) {
+        const rx = Math.random() * w;
+        const ry = Math.random() * h;
+        const radius = Math.random() * 3 + 2;
+        ctx.fillStyle = `rgba(255,255,255,0.5)`;
+        ctx.beginPath();
+        ctx.arc(rx, ry, radius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+}
+
+
+
+
+
+
+
+
 
 
 
