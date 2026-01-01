@@ -105,22 +105,21 @@ function applyColoredPencil() {
     const w = canvas.width;
     const h = canvas.height;
 
-    // Usa l'immagine solo come riferimento
+    // Usa l'immagine SOLO come riferimento colore
     ctx.drawImage(img, 0, 0, w, h);
     const src = ctx.getImageData(0, 0, w, h);
     const s = src.data;
 
-    // Pulizia totale
+    // PULIZIA TOTALE
     ctx.clearRect(0, 0, w, h);
 
-    // Carta
+    // Sfondo carta chiara
     ctx.fillStyle = "#f6f3ee";
     ctx.fillRect(0, 0, w, h);
 
-    const step = 6;          // distanza tra pennellate
-    const layers = 3;        // stratificazione
-    const strokeLen = 10;    // lunghezza pennellata
-    const strokeThick = 3;   // spessore
+    const step = 6;          // dimensione pennellata
+    const layers = 3;        // stratificazione colore
+    const maxRadius = 7;     // grandezza macchia
 
     for (let l = 0; l < layers; l++) {
         ctx.globalAlpha = 0.18 + l * 0.12;
@@ -135,71 +134,41 @@ function applyColoredPencil() {
                 const a = s[i + 3];
 
                 if (a < 60) continue;
-                if (r + g + b > 735) continue; // bianchi veri
+
+                // evita bianchi forti
+                if (r + g + b > 735) continue;
+
+                const radius = 3 + Math.random() * maxRadius;
 
                 ctx.fillStyle = `rgb(${r},${g},${b})`;
 
-                // direzione casuale ma netta
-                const dir = Math.floor(Math.random() * 4);
-
-                for (let k = 0; k < 2 + Math.floor(Math.random() * 2); k++) {
-                    const ox = (Math.random() - 0.5) * 2;
-                    const oy = (Math.random() - 0.5) * 2;
-
-                    if (dir === 0) {
-                        // orizzontale →
-                        ctx.fillRect(
-                            x + ox,
-                            y + oy,
-                            strokeLen,
-                            strokeThick
-                        );
-                    } else if (dir === 1) {
-                        // orizzontale ←
-                        ctx.fillRect(
-                            x - strokeLen + ox,
-                            y + oy,
-                            strokeLen,
-                            strokeThick
-                        );
-                    } else if (dir === 2) {
-                        // verticale ↓
-                        ctx.fillRect(
-                            x + ox,
-                            y + oy,
-                            strokeThick,
-                            strokeLen
-                        );
-                    } else {
-                        // verticale ↑
-                        ctx.fillRect(
-                            x + ox,
-                            y - strokeLen + oy,
-                            strokeThick,
-                            strokeLen
-                        );
-                    }
-                }
+                ctx.beginPath();
+                ctx.ellipse(
+                    x + Math.random() * 2,
+                    y + Math.random() * 2,
+                    radius,
+                    radius * (0.7 + Math.random() * 0.6),
+                    Math.random() * Math.PI,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fill();
             }
         }
     }
 
     ctx.globalAlpha = 1;
 
-    // Texture carta leggerissima
-    ctx.globalAlpha = 0.06;
-    ctx.fillStyle = "rgba(0,0,0,0.15)";
-    for (let i = 0; i < w * h * 0.015; i++) {
-        ctx.fillRect(
-            Math.random() * w,
-            Math.random() * h,
-            1,
-            1
-        );
+    // Texture carta (molto leggera)
+    ctx.globalAlpha = 0.07;
+    for (let i = 0; i < w * h * 0.02; i++) {
+        const rx = Math.random() * w;
+        const ry = Math.random() * h;
+        ctx.fillStyle = "rgba(0,0,0,0.12)";
+        ctx.fillRect(rx, ry, 1, 1);
     }
     ctx.globalAlpha = 1;
 }
-
 
 
 
