@@ -105,7 +105,7 @@ function applyColoredPencil() {
     const w = canvas.width;
     const h = canvas.height;
 
-    // Legge l'immagine SOLO come riferimento
+    // Legge l'immagine solo come riferimento colore
     ctx.drawImage(img, 0, 0, w, h);
     const src = ctx.getImageData(0, 0, w, h);
     const s = src.data;
@@ -113,55 +113,45 @@ function applyColoredPencil() {
     // PULIZIA TOTALE
     ctx.clearRect(0, 0, w, h);
 
-    // Carta leggermente calda
-    ctx.fillStyle = "#fcfcf8";
+    // Sfondo tipo carta scura (come Canva)
+    ctx.fillStyle = "#1e1e1e";
     ctx.fillRect(0, 0, w, h);
 
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
 
-    // PARAMETRI PASTELLO
-    const step = 3;
-    const layers = 4;              // STRATIFICAZIONE
-    const baseWidth = 1.4;
-    const maxLen = 6;
+    const step = 6;          // densità
+    const strokes = 14;     // quante linee per punto
+    const maxLen = 14;
 
-    // Direzioni incrociate (come mano vera)
-    const directions = [
-        0,
-        Math.PI / 4,
-        Math.PI / 2,
-        (3 * Math.PI) / 4
-    ];
+    for (let y = 0; y < h; y += step) {
+        for (let x = 0; x < w; x += step) {
+            const i = (y * w + x) * 4;
 
-    // STRATI
-    for (let l = 0; l < layers; l++) {
-        ctx.globalAlpha = 0.18 + l * 0.08;
+            const r = s[i];
+            const g = s[i + 1];
+            const b = s[i + 2];
+            const a = s[i + 3];
 
-        for (let y = 0; y < h; y += step) {
-            for (let x = 0; x < w; x += step) {
-                const px = Math.floor(x);
-                const py = Math.floor(y);
-                const i = (py * w + px) * 4;
+            if (a < 80) continue;
 
-                const r = s[i];
-                const g = s[i + 1];
-                const b = s[i + 2];
+            // evita bianchi
+            if (r + g + b > 720) continue;
 
-                const brightness = (r + g + b) / 3;
-                if (brightness > 248) continue;
+            ctx.strokeStyle = `rgb(${r},${g},${b})`;
 
-                const angle =
-                    directions[Math.floor(Math.random() * directions.length)] +
-                    (Math.random() - 0.5) * 0.4;
+            for (let k = 0; k < strokes; k++) {
+                const angle = Math.random() * Math.PI * 2;
+                const len = 4 + Math.random() * maxLen;
 
-                const len = 2 + Math.random() * maxLen;
-
-                ctx.strokeStyle = `rgb(${r},${g},${b})`;
-                ctx.lineWidth = baseWidth + Math.random() * 0.6;
+                ctx.lineWidth = 1.2 + Math.random() * 0.8;
+                ctx.globalAlpha = 0.8;
 
                 ctx.beginPath();
-                ctx.moveTo(x, y);
+                ctx.moveTo(
+                    x + Math.random() * 3,
+                    y + Math.random() * 3
+                );
                 ctx.lineTo(
                     x + Math.cos(angle) * len,
                     y + Math.sin(angle) * len
@@ -169,26 +159,6 @@ function applyColoredPencil() {
                 ctx.stroke();
             }
         }
-    }
-
-    // FUSIONE CRAYON / OLIO
-    ctx.globalAlpha = 0.08;
-    for (let i = 0; i < w * h * 0.03; i++) {
-        const rx = Math.random() * w;
-        const ry = Math.random() * h;
-        ctx.fillStyle = `rgba(0,0,0,0.25)`;
-        ctx.fillRect(rx, ry, 1.2, 1.2);
-    }
-
-    // Micro sbavature pastello
-    ctx.globalAlpha = 0.05;
-    for (let i = 0; i < w * h * 0.02; i++) {
-        const rx = Math.random() * w;
-        const ry = Math.random() * h;
-        ctx.beginPath();
-        ctx.arc(rx, ry, Math.random() * 1.6, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(0,0,0,0.2)";
-        ctx.fill();
     }
 
     ctx.globalAlpha = 1;
