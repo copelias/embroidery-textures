@@ -67,9 +67,10 @@ transformBtn.addEventListener("click", () => {
     break;
 
 
-  case "crocodile_print":
-    applyCrocodilePrint();
+  case "chocolate_embossed":
+    applyChocolateEmbossed();
     break;
+
 
 
 
@@ -248,65 +249,91 @@ function applyColoredPencil() {
 
 
 
-function applyCrocodilePrint() {
+function applyChocolateEmbossed() {
     const w = canvas.width;
     const h = canvas.height;
 
     // Disegna immagine originale
     ctx.drawImage(img, 0, 0, w, h);
 
-    // Prendi dati pixel
+    // Prendi pixel originali
     const src = ctx.getImageData(0, 0, w, h);
     const s = src.data;
 
-    // Svuota canvas con colore base scuro (tipo pelle)
+    // Converti in grayscale (serve per l'incisione)
+    const gray = new Uint8ClampedArray(w * h);
+    for (let i = 0; i < s.length; i += 4) {
+        gray[i / 4] =
+            0.299 * s[i] +
+            0.587 * s[i + 1] +
+            0.114 * s[i + 2];
+    }
+
+    // Base cioccolato
     ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = "#2a2a2a"; // base pelle scura
+    ctx.fillStyle = "#5a3825"; // marrone cioccolato
     ctx.fillRect(0, 0, w, h);
 
-    // Parametri pattern coccodrillo
-    const tileSize = 20; // dimensione “scaglie”
-    const edgeVariation = 5; // quanto irregolari devono essere i bordi
-    const highlight = 0.15; // lucentezza sulle scaglie
+    // Pattern tavoletta di cioccolato
+    const blockW = 60;
+    const blockH = 45;
 
-    for (let y = 0; y < h; y += tileSize) {
-        for (let x = 0; x < w; x += tileSize) {
+    ctx.strokeStyle = "rgba(0,0,0,0.25)";
+    ctx.lineWidth = 2;
 
-            // Colore medio della sezione
-            let rSum = 0, gSum = 0, bSum = 0, count = 0;
-            for (let ty = 0; ty < tileSize && (y + ty) < h; ty++) {
-                for (let tx = 0; tx < tileSize && (x + tx) < w; tx++) {
-                    const i = ((y + ty) * w + (x + tx)) * 4;
-                    rSum += s[i];
-                    gSum += s[i + 1];
-                    bSum += s[i + 2];
-                    count++;
-                }
-            }
-            const r = Math.floor(rSum / count);
-            const g = Math.floor(gSum / count);
-            const b = Math.floor(bSum / count);
-
-            // Disegna scaglia con irregolarità
-            const offsetX = Math.random() * edgeVariation - edgeVariation / 2;
-            const offsetY = Math.random() * edgeVariation - edgeVariation / 2;
-
-            ctx.fillStyle = `rgb(${Math.floor(r * 0.8)},${Math.floor(g * 0.8)},${Math.floor(b * 0.8)})`;
-            ctx.beginPath();
-            ctx.moveTo(x + offsetX, y + offsetY);
-            ctx.lineTo(x + tileSize - offsetX, y + offsetY);
-            ctx.lineTo(x + tileSize - offsetX, y + tileSize - offsetY);
-            ctx.lineTo(x + offsetX, y + tileSize - offsetY);
-            ctx.closePath();
-            ctx.fill();
-
-            // Aggiungi lucentezza
-            ctx.fillStyle = `rgba(255,255,255,${highlight})`;
-            ctx.fillRect(x + tileSize * 0.3, y + tileSize * 0.1, tileSize * 0.4, tileSize * 0.1);
+    for (let y = 0; y < h; y += blockH) {
+        for (let x = 0; x < w; x += blockW) {
+            ctx.strokeRect(x, y, blockW, blockH);
         }
     }
-}
 
+    // Effetto incisione (emboss)
+    const out = ctx.getImageData(0, 0, w, h);
+    const o = out.data;
+
+    const depth = 35; // profondità incisione
+
+    for (let y = 1; y < h - 1; y++) {
+        for (let x = 1; x < w - 1; x++) {
+            const i = y * w + x;
+
+            // Simulazione rilievo (tipo scolpito)
+            const light =
+                gray[i - 1] +
+                gray[i - w] -
+                gray[i + 1] -
+                gray[i + w];
+
+            const shade = Math.max(
+                -depth,
+                Math.min(depth, light)
+            );
+
+            const idx = i * 4;
+
+            // Marrone cioccolato + ombra/luci
+            o[idx]     = 90 + shade;
+            o[idx + 1] = 55 + shade;
+            o[idx + 2] = 35 + shade;
+            o[idx + 3] = 255;
+        }
+    }
+
+    ctx.putImageData(out, 0, 0);
+
+    // Lucentezza morbida (cioccolato vero)
+    ctx.globalAlpha = 0.15;
+    for (let i = 0; i < w * h * 0.015; i++) {
+        const rx = Math.random() * w;
+        const ry = Math.random() * h;
+        const r = Math.random() * 8 + 4;
+        ctx.fillStyle = "rgba(255,255,255,0.3)";
+        ctx.beginPath();
+        ctx.arc(rx, ry, r, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+}
 
 
 
