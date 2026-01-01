@@ -105,54 +105,70 @@ function applyColoredPencil() {
     const w = canvas.width;
     const h = canvas.height;
 
-    // Ottieni pixel originali
+    // Disegna SOLO per leggere i pixel
     ctx.drawImage(img, 0, 0, w, h);
     const src = ctx.getImageData(0, 0, w, h);
     const s = src.data;
 
-    // NON cancelliamo il canvas, nessun fillRect
+    // PULIZIA TOTALE
+    ctx.clearRect(0, 0, w, h);
 
-    // Tratti principali a matita colorata
-    const step = 2;
+    // Carta (non bianco puro)
+    ctx.fillStyle = "#fdfdfb";
+    ctx.fillRect(0, 0, w, h);
+
+    // PARAMETRI MATITA
+    const step = 2.5;          // densità tratto
+    const maxLen = 3.5;        // lunghezza tratto
+    const minLen = 1.2;
+    const lineW = 0.9;         // spessore linea
+
+    ctx.lineCap = "round";
+
+    // RICOSTRUZIONE A TRATTI
     for (let y = 0; y < h; y += step) {
         for (let x = 0; x < w; x += step) {
-            const i = (y * w + x) * 4;
+            const px = Math.floor(x);
+            const py = Math.floor(y);
+            const i = (py * w + px) * 4;
+
             const r = s[i];
             const g = s[i + 1];
             const b = s[i + 2];
 
-            // Offset leggero casuale per tatto matita
-            const offsetX = x + (Math.random() - 0.5) * 1.2;
-            const offsetY = y + (Math.random() - 0.5) * 1.2;
+            const brightness = (r + g + b) / 3;
+            if (brightness > 245) continue; // lascia bianchi veri
+
+            // Tratto leggermente casuale ma controllato
+            const angle = Math.random() * Math.PI;
+            const len = minLen + Math.random() * maxLen;
 
             ctx.strokeStyle = `rgb(${r},${g},${b})`;
-            ctx.lineWidth = 1.2;
+            ctx.lineWidth = lineW;
 
             ctx.beginPath();
-            ctx.moveTo(offsetX, offsetY);
-            ctx.lineTo(offsetX + Math.random() * 1.5, offsetY + Math.random() * 1.5);
+            ctx.moveTo(x, y);
+            ctx.lineTo(
+                x + Math.cos(angle) * len,
+                y + Math.sin(angle) * len
+            );
             ctx.stroke();
         }
     }
 
-    // Micro-texture per tatto della matita, trasparenza bassa
-    ctx.globalAlpha = 0.08;
-    for (let i = 0; i < w * h * 0.02; i++) {
+    // TEXTURE CARTA + GRAFITE
+    ctx.globalAlpha = 0.06;
+    ctx.fillStyle = "rgba(0,0,0,0.15)";
+    for (let i = 0; i < w * h * 0.015; i++) {
         const rx = Math.random() * w;
         const ry = Math.random() * h;
-        const idx = (Math.floor(ry) * w + Math.floor(rx)) * 4;
-
-        const colR = s[idx];
-        const colG = s[idx + 1];
-        const colB = s[idx + 2];
-
-        ctx.fillStyle = `rgba(${colR},${colG},${colB},0.3)`;
-        ctx.beginPath();
-        ctx.arc(rx, ry, Math.random() * 1.0, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.fillRect(rx, ry, 0.7, 0.7);
     }
     ctx.globalAlpha = 1;
 }
+
+
+
 
 
 function applyCleanLineArt() {
