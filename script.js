@@ -67,9 +67,10 @@ transformBtn.addEventListener("click", () => {
     break;
 
 
-  case "chocolate_embossed":
-    applyChocolateEmbossed();
+case "chocolate_deboss":
+    applyChocolateDeboss();
     break;
+
 
 
 
@@ -249,90 +250,77 @@ function applyColoredPencil() {
 
 
 
-function applyChocolateEmbossed() {
+function applyChocolateDeboss() {
     const w = canvas.width;
     const h = canvas.height;
 
-    // Disegna immagine originale
-    ctx.drawImage(img, 0, 0, w, h);
+    // --- CARICA TEXTURE CIOCCOLATO ---
+    const chocolate = new Image();
+    chocolate.crossOrigin = "anonymous";
+    chocolate.src = "https://media.istockphoto.com/id/1251981273/photo/milk-chocolate-bar-background-melted-chocolate-dripping-pastry-ingredient.jpg";
 
-    // Prendi pixel originali
-    const src = ctx.getImageData(0, 0, w, h);
-    const s = src.data;
+    chocolate.onload = () => {
 
-    // Converti in grayscale (serve per l'incisione)
-    const gray = new Uint8ClampedArray(w * h);
-    for (let i = 0; i < s.length; i += 4) {
-        gray[i / 4] =
-            0.299 * s[i] +
-            0.587 * s[i + 1] +
-            0.114 * s[i + 2];
-    }
+        // Disegna cioccolato come base reale
+        ctx.drawImage(chocolate, 0, 0, w, h);
 
-    // Base cioccolato
-    ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = "#5a3825"; // marrone cioccolato
-    ctx.fillRect(0, 0, w, h);
+        // Disegna immagine utente sopra (solo per calcolo)
+        ctx.drawImage(img, 0, 0, w, h);
 
-    // Pattern tavoletta di cioccolato
-    const blockW = 60;
-    const blockH = 45;
+        const user = ctx.getImageData(0, 0, w, h);
+        const u = user.data;
 
-    ctx.strokeStyle = "rgba(0,0,0,0.25)";
-    ctx.lineWidth = 2;
-
-    for (let y = 0; y < h; y += blockH) {
-        for (let x = 0; x < w; x += blockW) {
-            ctx.strokeRect(x, y, blockW, blockH);
+        // Grayscale dell'immagine utente (mappa di incisione)
+        const depthMap = new Float32Array(w * h);
+        for (let i = 0; i < u.length; i += 4) {
+            depthMap[i / 4] =
+                (0.299 * u[i] +
+                 0.587 * u[i + 1] +
+                 0.114 * u[i + 2]) / 255;
         }
-    }
 
-    // Effetto incisione (emboss)
-    const out = ctx.getImageData(0, 0, w, h);
-    const o = out.data;
+        // Ri-prendi solo il cioccolato
+        ctx.drawImage(chocolate, 0, 0, w, h);
+        const base = ctx.getImageData(0, 0, w, h);
+        const b = base.data;
 
-    const depth = 35; // profondità incisione
+        const strength = 35; // profondità incisione
 
-    for (let y = 1; y < h - 1; y++) {
-        for (let x = 1; x < w - 1; x++) {
-            const i = y * w + x;
+        // --- DEBOSS: SCAVATO NEL CIOCCOLATO ---
+        for (let y = 1; y < h - 1; y++) {
+            for (let x = 1; x < w - 1; x++) {
+                const i = y * w + x;
+                const idx = i * 4;
 
-            // Simulazione rilievo (tipo scolpito)
-            const light =
-                gray[i - 1] +
-                gray[i - w] -
-                gray[i + 1] -
-                gray[i + w];
+                // Gradiente (simula luce/ombra)
+                const gx =
+                    depthMap[i + 1] - depthMap[i - 1];
+                const gy =
+                    depthMap[i + w] - depthMap[i - w];
 
-            const shade = Math.max(
-                -depth,
-                Math.min(depth, light)
-            );
+                const shade = -(gx + gy) * strength;
 
-            const idx = i * 4;
-
-            // Marrone cioccolato + ombra/luci
-            o[idx]     = 90 + shade;
-            o[idx + 1] = 55 + shade;
-            o[idx + 2] = 35 + shade;
-            o[idx + 3] = 255;
+                b[idx]     = Math.max(0, Math.min(255, b[idx]     + shade));
+                b[idx + 1] = Math.max(0, Math.min(255, b[idx + 1] + shade));
+                b[idx + 2] = Math.max(0, Math.min(255, b[idx + 2] + shade));
+            }
         }
-    }
 
-    ctx.putImageData(out, 0, 0);
+        ctx.putImageData(base, 0, 0);
 
-    // Lucentezza morbida (cioccolato vero)
-    ctx.globalAlpha = 0.15;
-    for (let i = 0; i < w * h * 0.015; i++) {
-        const rx = Math.random() * w;
-        const ry = Math.random() * h;
-        const r = Math.random() * 8 + 4;
-        ctx.fillStyle = "rgba(255,255,255,0.3)";
-        ctx.beginPath();
-        ctx.arc(rx, ry, r, 0, Math.PI * 2);
-        ctx.fill();
-    }
-    ctx.globalAlpha = 1;
+        // --- LUCENTEZZA MORBIDA CIOCCOLATO ---
+        ctx.globalAlpha = 0.18;
+        for (let i = 0; i < w * h * 0.01; i++) {
+            const rx = Math.random() * w;
+            const ry = Math.random() * h;
+            const r = Math.random() * 6 + 3;
+            ctx.fillStyle = "rgba(255,255,255,0.25)";
+            ctx.beginPath();
+            ctx.arc(rx, ry, r, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+    };
 }
 
 
