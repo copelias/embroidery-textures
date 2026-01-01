@@ -57,6 +57,11 @@ transformBtn.addEventListener("click", () => {
   applyAluminiumEmboss();
   break; */
 
+   case "dot_art":
+    applyDotArt();
+    break;
+
+
   case "colored_pencil":
     applyColoredPencil();
     break;
@@ -100,6 +105,70 @@ downloadBtn.addEventListener("click", () => {
 // ================================
 // EFFECT FUNCTIONS
 // ================================
+
+function applyDotArt() {
+    const w = canvas.width;
+    const h = canvas.height;
+
+    // Disegna immagine originale come base
+    ctx.drawImage(img, 0, 0, w, h);
+
+    // Prendi i dati pixel dell'immagine
+    const src = ctx.getImageData(0, 0, w, h);
+    const s = src.data;
+
+    // Svuota canvas con sfondo bianco
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, w, h);
+
+    const dotSize = 8; // dimensione dei puntini
+    const radius = dotSize / 2;
+
+    // Ciclo su righe e colonne secondo dotSize
+    for (let y = 0; y < h; y += dotSize) {
+        for (let x = 0; x < w; x += dotSize) {
+            const i = (y * w + x) * 4;
+            const r = s[i];
+            const g = s[i + 1];
+            const b = s[i + 2];
+            const a = s[i + 3] / 255;
+
+            // Colore del puntino
+            ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+
+            // Disegna il cerchio
+            ctx.beginPath();
+            ctx.arc(x + radius, y + radius, radius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    // Aggiungi texture casuale per effetto più artistico
+    ctx.globalAlpha = 0.1;
+    const totalDots = Math.floor(w * h * 0.02); // 2% punti random
+    for (let i = 0; i < totalDots; i++) {
+        const rx = Math.random() * w;
+        const ry = Math.random() * h;
+        const rRadius = Math.random() * 1.5;
+        const rColor = Math.floor(Math.random() * 255);
+        ctx.fillStyle = `rgba(${rColor},${rColor},${rColor},0.2)`;
+        ctx.beginPath();
+        ctx.arc(rx, ry, rRadius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+}
+
+
+
+
+
+
+
+
+
+
 
 function applyColoredPencil() {
     const w = canvas.width;
