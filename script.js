@@ -67,9 +67,10 @@ transformBtn.addEventListener("click", () => {
     break;
 
 
-  case "cotton":
-    applyCotton();
+  case "crocodile_print":
+    applyCrocodilePrint();
     break;
+
 
 
   case "clean_line_art":
@@ -247,7 +248,7 @@ function applyColoredPencil() {
 
 
 
-function applyCotton() {
+function applyCrocodilePrint() {
     const w = canvas.width;
     const h = canvas.height;
 
@@ -258,53 +259,52 @@ function applyCotton() {
     const src = ctx.getImageData(0, 0, w, h);
     const s = src.data;
 
-    // Svuota canvas con bianco morbido
+    // Svuota canvas con colore base scuro (tipo pelle)
     ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = "#2a2a2a"; // base pelle scura
     ctx.fillRect(0, 0, w, h);
 
-    // Parametri cotton
-    const softness = 6;    // quanto sfumare i colori
-    const fluffDensity = 0.03; // percentuale di punti casuali
+    // Parametri pattern coccodrillo
+    const tileSize = 20; // dimensione “scaglie”
+    const edgeVariation = 5; // quanto irregolari devono essere i bordi
+    const highlight = 0.15; // lucentezza sulle scaglie
 
-    // Sfuma i pixel creando effetto morbido
-    for (let y = 0; y < h; y += 1) {
-        for (let x = 0; x < w; x += 1) {
-            const i = (y * w + x) * 4;
-            
-            // Calcolo colore sfumato mischiando pixel vicini
-            const nx = Math.min(x + Math.floor(Math.random() * softness), w - 1);
-            const ny = Math.min(y + Math.floor(Math.random() * softness), h - 1);
-            const ni = (ny * w + nx) * 4;
+    for (let y = 0; y < h; y += tileSize) {
+        for (let x = 0; x < w; x += tileSize) {
 
-            const r = (s[i] + s[ni]) / 2;
-            const g = (s[i + 1] + s[ni + 1]) / 2;
-            const b = (s[i + 2] + s[ni + 2]) / 2;
-            const a = s[i + 3];
+            // Colore medio della sezione
+            let rSum = 0, gSum = 0, bSum = 0, count = 0;
+            for (let ty = 0; ty < tileSize && (y + ty) < h; ty++) {
+                for (let tx = 0; tx < tileSize && (x + tx) < w; tx++) {
+                    const i = ((y + ty) * w + (x + tx)) * 4;
+                    rSum += s[i];
+                    gSum += s[i + 1];
+                    bSum += s[i + 2];
+                    count++;
+                }
+            }
+            const r = Math.floor(rSum / count);
+            const g = Math.floor(gSum / count);
+            const b = Math.floor(bSum / count);
 
-            s[i] = r;
-            s[i + 1] = g;
-            s[i + 2] = b;
-            s[i + 3] = a;
+            // Disegna scaglia con irregolarità
+            const offsetX = Math.random() * edgeVariation - edgeVariation / 2;
+            const offsetY = Math.random() * edgeVariation - edgeVariation / 2;
+
+            ctx.fillStyle = `rgb(${Math.floor(r * 0.8)},${Math.floor(g * 0.8)},${Math.floor(b * 0.8)})`;
+            ctx.beginPath();
+            ctx.moveTo(x + offsetX, y + offsetY);
+            ctx.lineTo(x + tileSize - offsetX, y + offsetY);
+            ctx.lineTo(x + tileSize - offsetX, y + tileSize - offsetY);
+            ctx.lineTo(x + offsetX, y + tileSize - offsetY);
+            ctx.closePath();
+            ctx.fill();
+
+            // Aggiungi lucentezza
+            ctx.fillStyle = `rgba(255,255,255,${highlight})`;
+            ctx.fillRect(x + tileSize * 0.3, y + tileSize * 0.1, tileSize * 0.4, tileSize * 0.1);
         }
     }
-
-    // Metti i dati modificati sul canvas
-    ctx.putImageData(src, 0, 0);
-
-    // Aggiungi puntini morbidi tipo fiocchi di cotone
-    ctx.globalAlpha = 0.08;
-    const totalFluff = Math.floor(w * h * fluffDensity);
-    for (let i = 0; i < totalFluff; i++) {
-        const rx = Math.random() * w;
-        const ry = Math.random() * h;
-        const radius = Math.random() * 3 + 2;
-        ctx.fillStyle = `rgba(255,255,255,0.5)`;
-        ctx.beginPath();
-        ctx.arc(rx, ry, radius, 0, Math.PI * 2);
-        ctx.fill();
-    }
-    ctx.globalAlpha = 1;
 }
 
 
