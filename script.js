@@ -67,9 +67,10 @@ transformBtn.addEventListener("click", () => {
     break;
 
 
-case "chocolate_deboss":
-    applyChocolateDeboss();
+case "line_art":
+    applyLineArt();
     break;
+
 
 
 
@@ -250,79 +251,57 @@ function applyColoredPencil() {
 
 
 
-function applyChocolateDeboss() {
+function applyLineArt() {
     const w = canvas.width;
     const h = canvas.height;
 
-    // --- CARICA TEXTURE CIOCCOLATO ---
-    const chocolate = new Image();
-    chocolate.crossOrigin = "anonymous";
-    chocolate.src = "https://media.istockphoto.com/id/1251981273/photo/milk-chocolate-bar-background-melted-chocolate-dripping-pastry-ingredient.jpg";
+    // Disegna immagine originale
+    ctx.drawImage(img, 0, 0, w, h);
 
-    chocolate.onload = () => {
+    // Prendi pixel
+    const src = ctx.getImageData(0, 0, w, h);
+    const s = src.data;
 
-        // Disegna cioccolato come base reale
-        ctx.drawImage(chocolate, 0, 0, w, h);
+    // Sfondo bianco (come foglio)
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, w, h);
 
-        // Disegna immagine utente sopra (solo per calcolo)
-        ctx.drawImage(img, 0, 0, w, h);
+    // Parametri righismo
+    const lineSpacing = 6;   // spazio tra le righe (IMPORTANTISSIMO)
+    const lineHeight = 2;    // spessore riga
+    const opacity = 0.9;
 
-        const user = ctx.getImageData(0, 0, w, h);
-        const u = user.data;
+    for (let y = 0; y < h; y += lineSpacing) {
+        for (let x = 0; x < w; x++) {
 
-        // Grayscale dell'immagine utente (mappa di incisione)
-        const depthMap = new Float32Array(w * h);
-        for (let i = 0; i < u.length; i += 4) {
-            depthMap[i / 4] =
-                (0.299 * u[i] +
-                 0.587 * u[i + 1] +
-                 0.114 * u[i + 2]) / 255;
-        }
+            const i = (y * w + x) * 4;
 
-        // Ri-prendi solo il cioccolato
-        ctx.drawImage(chocolate, 0, 0, w, h);
-        const base = ctx.getImageData(0, 0, w, h);
-        const b = base.data;
+            const r = s[i];
+            const g = s[i + 1];
+            const b = s[i + 2];
 
-        const strength = 35; // profondità incisione
+            ctx.strokeStyle = `rgba(${r},${g},${b},${opacity})`;
+            ctx.lineWidth = lineHeight;
 
-        // --- DEBOSS: SCAVATO NEL CIOCCOLATO ---
-        for (let y = 1; y < h - 1; y++) {
-            for (let x = 1; x < w - 1; x++) {
-                const i = y * w + x;
-                const idx = i * 4;
-
-                // Gradiente (simula luce/ombra)
-                const gx =
-                    depthMap[i + 1] - depthMap[i - 1];
-                const gy =
-                    depthMap[i + w] - depthMap[i - w];
-
-                const shade = -(gx + gy) * strength;
-
-                b[idx]     = Math.max(0, Math.min(255, b[idx]     + shade));
-                b[idx + 1] = Math.max(0, Math.min(255, b[idx + 1] + shade));
-                b[idx + 2] = Math.max(0, Math.min(255, b[idx + 2] + shade));
-            }
-        }
-
-        ctx.putImageData(base, 0, 0);
-
-        // --- LUCENTEZZA MORBIDA CIOCCOLATO ---
-        ctx.globalAlpha = 0.18;
-        for (let i = 0; i < w * h * 0.01; i++) {
-            const rx = Math.random() * w;
-            const ry = Math.random() * h;
-            const r = Math.random() * 6 + 3;
-            ctx.fillStyle = "rgba(255,255,255,0.25)";
+            // Disegna micro segmento di linea
             ctx.beginPath();
-            ctx.arc(rx, ry, r, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + 1, y);
+            ctx.stroke();
         }
-        ctx.globalAlpha = 1;
-    };
-}
+    }
 
+    // Texture leggera per effetto disegnato a mano
+    ctx.globalAlpha = 0.08;
+    for (let i = 0; i < w * h * 0.015; i++) {
+        const rx = Math.random() * w;
+        const ry = Math.random() * h;
+        ctx.fillStyle = "rgba(0,0,0,0.2)";
+        ctx.fillRect(rx, ry, 1, 1);
+    }
+    ctx.globalAlpha = 1;
+}
 
 
 
