@@ -67,9 +67,10 @@ transformBtn.addEventListener("click", () => {
     break;
 
 
-case "line_art":
-    applyLineArt();
+case "vertical_pencil":
+    applyVerticalPencil();
     break;
+
 
 
 
@@ -250,59 +251,68 @@ function applyColoredPencil() {
 
 
 
-
-function applyLineArt() {
+function applyVerticalPencil() {
     const w = canvas.width;
     const h = canvas.height;
 
-    // Disegna immagine originale
+    // Disegna immagine originale (solo per leggere i colori)
     ctx.drawImage(img, 0, 0, w, h);
 
-    // Prendi pixel
     const src = ctx.getImageData(0, 0, w, h);
     const s = src.data;
 
-    // Sfondo bianco (come foglio)
+    // Pulisce canvas
     ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, w, h);
 
-    // Parametri righismo
-    const lineSpacing = 6;   // spazio tra le righe (IMPORTANTISSIMO)
-    const lineHeight = 2;    // spessore riga
+    // Parametri stile matita
+    const lineWidth = 8;        // GROSSE righe
+    const lineGap = 3;          // micro spazio tra righe (fondamentale)
+    const jitter = 2;           // irregolarità mano umana
     const opacity = 0.9;
 
-    for (let y = 0; y < h; y += lineSpacing) {
-        for (let x = 0; x < w; x++) {
+    for (let x = 0; x < w; x += lineWidth + lineGap) {
 
+        // Colore medio della colonna
+        let rSum = 0, gSum = 0, bSum = 0, count = 0;
+
+        for (let y = 0; y < h; y++) {
             const i = (y * w + x) * 4;
-
-            const r = s[i];
-            const g = s[i + 1];
-            const b = s[i + 2];
-
-            ctx.strokeStyle = `rgba(${r},${g},${b},${opacity})`;
-            ctx.lineWidth = lineHeight;
-
-            // Disegna micro segmento di linea
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x + 1, y);
-            ctx.stroke();
+            rSum += s[i];
+            gSum += s[i + 1];
+            bSum += s[i + 2];
+            count++;
         }
+
+        const r = Math.floor(rSum / count);
+        const g = Math.floor(gSum / count);
+        const b = Math.floor(bSum / count);
+
+        // Disegna riga verticale tipo matita
+        ctx.strokeStyle = `rgba(${r},${g},${b},${opacity})`;
+        ctx.lineWidth = lineWidth;
+
+        ctx.beginPath();
+        ctx.moveTo(
+            x + Math.random() * jitter,
+            0
+        );
+        ctx.lineTo(
+            x + Math.random() * jitter,
+            h
+        );
+        ctx.stroke();
     }
 
-    // Texture leggera per effetto disegnato a mano
-    ctx.globalAlpha = 0.08;
-    for (let i = 0; i < w * h * 0.015; i++) {
+    // Texture matita / pastello
+    ctx.globalAlpha = 0.12;
+    for (let i = 0; i < w * h * 0.02; i++) {
         const rx = Math.random() * w;
         const ry = Math.random() * h;
-        ctx.fillStyle = "rgba(0,0,0,0.2)";
-        ctx.fillRect(rx, ry, 1, 1);
+        ctx.fillStyle = "rgba(0,0,0,0.15)";
+        ctx.fillRect(rx, ry, 1, 2);
     }
     ctx.globalAlpha = 1;
 }
-
 
 
 
