@@ -255,65 +255,58 @@ function applyVerticalPencil() {
     const w = canvas.width;
     const h = canvas.height;
 
-    // Disegna immagine originale (solo per leggere i colori)
+    // Disegna immagine originale per leggere i pixel
     ctx.drawImage(img, 0, 0, w, h);
-
     const src = ctx.getImageData(0, 0, w, h);
     const s = src.data;
 
     // Pulisce canvas
     ctx.clearRect(0, 0, w, h);
 
-    // Parametri stile matita
-    const lineWidth = 8;        // GROSSE righe
-    const lineGap = 3;          // micro spazio tra righe (fondamentale)
-    const jitter = 2;           // irregolarità mano umana
+    // Parametri matita
+    const lineWidth = 8;     // spessore matita
+    const lineGap = 3;       // spazio visibile tra righe
+    const segment = 6;       // altezza segmenti (FONDAMENTALE)
+    const jitter = 1.5;
     const opacity = 0.9;
 
     for (let x = 0; x < w; x += lineWidth + lineGap) {
+        for (let y = 0; y < h; y += segment) {
 
-        // Colore medio della colonna
-        let rSum = 0, gSum = 0, bSum = 0, count = 0;
+            const sx = Math.min(x, w - 1);
+            const sy = Math.min(y, h - 1);
+            const i = (sy * w + sx) * 4;
 
-        for (let y = 0; y < h; y++) {
-            const i = (y * w + x) * 4;
-            rSum += s[i];
-            gSum += s[i + 1];
-            bSum += s[i + 2];
-            count++;
+            const r = s[i];
+            const g = s[i + 1];
+            const b = s[i + 2];
+
+            ctx.strokeStyle = `rgba(${r},${g},${b},${opacity})`;
+            ctx.lineWidth = lineWidth;
+
+            ctx.beginPath();
+            ctx.moveTo(
+                x + Math.random() * jitter,
+                y
+            );
+            ctx.lineTo(
+                x + Math.random() * jitter,
+                y + segment
+            );
+            ctx.stroke();
         }
-
-        const r = Math.floor(rSum / count);
-        const g = Math.floor(gSum / count);
-        const b = Math.floor(bSum / count);
-
-        // Disegna riga verticale tipo matita
-        ctx.strokeStyle = `rgba(${r},${g},${b},${opacity})`;
-        ctx.lineWidth = lineWidth;
-
-        ctx.beginPath();
-        ctx.moveTo(
-            x + Math.random() * jitter,
-            0
-        );
-        ctx.lineTo(
-            x + Math.random() * jitter,
-            h
-        );
-        ctx.stroke();
     }
 
-    // Texture matita / pastello
-    ctx.globalAlpha = 0.12;
+    // Texture pastello / matita
+    ctx.globalAlpha = 0.15;
     for (let i = 0; i < w * h * 0.02; i++) {
         const rx = Math.random() * w;
         const ry = Math.random() * h;
-        ctx.fillStyle = "rgba(0,0,0,0.15)";
+        ctx.fillStyle = "rgba(0,0,0,0.12)";
         ctx.fillRect(rx, ry, 1, 2);
     }
     ctx.globalAlpha = 1;
 }
-
 
 
 
